@@ -1,0 +1,32 @@
+<resources>
+    <string name="app_name">Seed</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+    <string name="login">Log in</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="create_account">Still has no account? Sign up</string>
+    <string name="invalid_email">Invalid email</string>
+    <string name="sign_up">Sign Up</string>
+    <string name="have_already_an_account_log_in">Have already an account? Log in!</string>
+    <string name="name">Name</string>
+    <string name="user_name">User name</string>
+    <string name="user_email">user@email.com</string>
+    <string name="title_activity_main">MainActivity</string>
+    <string name="grid_gallery">Grid gallery</string>
+    <string name="scrolling_gallery">Scrolling gallery</string>
+    <string name="import_title">Import</string>
+    <string name="gallery_title">Gallery</string>
+    <string name="slideshow">Slideshow</string>
+    <string name="tools">Tools</string>
+    <string name="communicate">Communicate</string>
+    <string name="share">Share</string>
+    <string name="send">Send</string>
+    <string name="log_out">Log out</string>
+    <string name="userPhoto">UserPhoto</string>
+    <string name="user_email_com">user@email.com</string>
+    <string name="or">OR</string>
+</resources>
