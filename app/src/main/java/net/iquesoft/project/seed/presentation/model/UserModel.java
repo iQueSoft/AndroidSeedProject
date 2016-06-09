@@ -4,14 +4,14 @@ import android.net.Uri;
 
 /**
  * Class which stores all variables, such as user ID, name, etc. Here are only setters and getters.
- * As an example some User model created
+ *
  */
 
 
 public class UserModel {
 
     private static UserModel ourInstance;
-    private Uri userPthotoUrl;
+    private Uri userPhotoUrl;
     private String userId;
     private String userName;
     private String userEmail;
@@ -46,11 +46,11 @@ public class UserModel {
     }
 
     public Uri getUserPhotoUrl() {
-        return userPthotoUrl;
+        return userPhotoUrl;
     }
 
-    public void setUserPhotoUrl(Uri userPthotoUrl) {
-        this.userPthotoUrl = userPthotoUrl;
+    public void setUserPhotoUrl(Uri userPhotoUrl) {
+        this.userPhotoUrl = userPhotoUrl;
     }
 
     public String getUserId() {

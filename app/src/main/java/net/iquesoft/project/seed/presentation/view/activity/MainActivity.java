@@ -33,6 +33,7 @@ import net.iquesoft.project.seed.presentation.model.UserModel;
 import net.iquesoft.project.seed.presentation.navigation.Navigator;
 import net.iquesoft.project.seed.presentation.presenter.UserLoginPresenter;
 import net.iquesoft.project.seed.presentation.view.fragment.LoginFragment;
+import net.iquesoft.project.seed.utils.LogUtil;
 import net.iquesoft.project.seed.utils.ToastMaker;
 
 import butterknife.ButterKnife;
@@ -167,6 +168,7 @@ public class MainActivity extends BaseActivity
             }
             if (acct != null) {
                 userModel.setUserPhotoUrl(acct.getPhotoUrl());
+                LogUtil.makeLog("PHOTO URL " + acct.getPhotoUrl());
             }
             if (acct != null) {
                 userModel.setUserId(acct.getId());
@@ -217,7 +219,9 @@ public class MainActivity extends BaseActivity
         if (signedIn) {
             tvNavHeaderName.setText(userModel.getUserName());
             tvNavHeaderEmail.setText(userModel.getUserEmail());
+
             if (userModel.getUserPhotoUrl() != null) {
+                LogUtil.makeLog("userModel.getUserPhotoUrl() " + userModel.getUserPhotoUrl());
                 imageLoader.displayImage(userModel.getUserPhotoUrl().toString(), ivUserPhoto);
             }
             tvNavLogOut.setVisible(true);
@@ -228,16 +232,6 @@ public class MainActivity extends BaseActivity
             ivUserPhoto.setImageResource(R.mipmap.ic_launcher);
             tvNavLogOut.setVisible(false);
         }
-//        tvNavLogOut.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-//            @Override
-//            public boolean onMenuItemClick(MenuItem item) {
-//                if (item.getItemId() == R.id.nav_logOut) {
-//                    signOut();
-//                }
-//                return true;
-//            }
-//        });
-
     }
 
     private void onLoggedIn() {

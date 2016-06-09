@@ -66,7 +66,7 @@ public class UserLoginPresenter implements Presenter {
         }
 
         /*
-         * Here should be used HTTP Request
+         * Here should be HTTP Request
          */
 
         return Constants.CODE_OK;

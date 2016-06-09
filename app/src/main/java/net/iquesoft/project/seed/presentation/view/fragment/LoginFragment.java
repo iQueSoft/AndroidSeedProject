@@ -52,6 +52,8 @@ public class LoginFragment extends BaseFragment implements LoadDataView, View.On
     TextInputEditText etLogin;
     @BindView(R.id.etPassword)
     TextInputEditText etPassword;
+
+
     private Subscription subscription;
     private Observer<Integer> observer = new Observer<Integer>() {
         @Override
