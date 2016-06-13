@@ -20,10 +20,9 @@ import net.iquesoft.project.seed.utils.ToastMaker;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import rx.Observer;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
+import rx.functions.Action1;
 
 
 public class SignUpFragment extends BaseFragment implements LoadDataView, View.OnFocusChangeListener {
@@ -36,53 +35,38 @@ public class SignUpFragment extends BaseFragment implements LoadDataView, View.O
     TextView tvGoToSignUp;
     @BindView(R.id.tilEmail)
     TextInputLayout tilEmail;
-    @BindView(R.id.tilName)
-    TextInputLayout tilName;
     @BindView(R.id.tilRegistrationPassword)
     TextInputLayout tilRegistrationPassword;
     @BindView(R.id.etEmail)
     TextInputEditText etEmail;
-    @BindView(R.id.etName)
-    TextInputEditText etName;
     @BindView(R.id.etRegistrationPassword)
     TextInputEditText etRegistrationPassword;
     private Subscription subscription;
-    private Observer<Integer> observer = new Observer<Integer>() {
+    private Action1<Boolean> action1 = new Action1<Boolean>() {
         @Override
-        public void onCompleted() {
-            hideLoading();
-            showToast("Signed up");
-            navigator.navigateToMainFragment(fragmentManager);
-        }
-
-        @Override
-        public void onError(Throwable e) {
-            hideLoading();
-
-            int code = presenter.getErrorCode();
-            if (code == Constants.ERROR_EMPTY_NAME) {
-                onInvalidName(Constants.ERROR_MESSAGE_EMPTY_FIELD);
-            } else if (code == Constants.ERROR_EMPTY_EMAIL) {
-                onInvalidEmail(Constants.ERROR_MESSAGE_EMPTY_FIELD);
-            } else if (code == Constants.ERROR_EMPTY_PASSWORD) {
-                onInvalidPassword(Constants.ERROR_MESSAGE_EMPTY_FIELD);
-            } else if (code == Constants.ERROR_INVALID_NAME) {
-                onInvalidName(Constants.ERROR_MESSAGE_INVALID_NAME);
-            } else if (code == Constants.ERROR_INVALID_EMAIL) {
-                onInvalidEmail(Constants.ERROR_MESSAGE_INVALID_EMAIL);
-            } else if (code == Constants.ERROR_INVALID_PASSWORD) {
-                onInvalidPassword(Constants.ERROR_MESSAGE_INVALID_PASSWORD);
-            } else if (code == Constants.ERROR_CONNECTION_LOST) {
-                showError(Constants.ERROR_MESSAGE_CONNECTION_LOST);
-            } else if (code == Constants.ERROR_UNKNOWN) {
-                showError(Constants.ERROR_MESSAGE_UNKNOWN_ERROR);
-            }
-        }
-
-        @Override
-        public void onNext(Integer code) {
+        public void call(Boolean aBoolean) {
         }
     };
+
+    private void onError() {
+        hideLoading();
+        int code = presenter.getErrorCode();
+        if (code == Constants.ERROR_EMPTY_EMAIL) {
+            onInvalidEmail(Constants.ERROR_MESSAGE_EMPTY_FIELD);
+        } else if (code == Constants.ERROR_EMPTY_PASSWORD) {
+            onInvalidPassword(Constants.ERROR_MESSAGE_EMPTY_FIELD);
+        } else if (code == Constants.ERROR_INVALID_EMAIL) {
+            onInvalidEmail(Constants.ERROR_MESSAGE_INVALID_EMAIL);
+        } else if (code == Constants.ERROR_INVALID_PASSWORD) {
+            onInvalidPassword(Constants.ERROR_MESSAGE_INVALID_PASSWORD);
+        } else if (code == Constants.ERROR_CONNECTION_LOST) {
+            showError(Constants.ERROR_MESSAGE_CONNECTION_LOST);
+        } else if (code == Constants.ERROR_UNKNOWN) {
+            showError(Constants.ERROR_MESSAGE_UNKNOWN_ERROR);
+        } else if (code == Constants.ERROR_AUTH_FAILED) {
+            showError(Constants.ERROR_MESSAGE_AUTH_FAILED);
+        }
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -103,7 +87,19 @@ public class SignUpFragment extends BaseFragment implements LoadDataView, View.O
 
     @OnClick(R.id.btnSignUp)
     protected void signUp() {
-        attemptToSignUp();
+        onInvalidEmail(null);
+        onInvalidPassword(null);
+        showLoading();
+        presenter.setEmail(etEmail.getText().toString());
+        presenter.setPassword(etRegistrationPassword.getText().toString());
+        if (presenter.isCredentialsValid()) {
+            subscription = presenter.getSignUpObservable().
+                    subscribeOn(AndroidSchedulers.mainThread())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(action1);
+        } else {
+            onError();
+        }
     }
 
     @OnClick(R.id.tvGoToLogIn)
@@ -111,18 +107,6 @@ public class SignUpFragment extends BaseFragment implements LoadDataView, View.O
         navigator.navigateToLogInFragment(fragmentManager);
     }
 
-    private void attemptToSignUp() {
-        onInvalidEmail(null);
-        onInvalidPassword(null);
-        showLoading();
-        presenter.setName(etName.getText().toString());
-        presenter.setEmail(etEmail.getText().toString());
-        presenter.setPassword(etRegistrationPassword.getText().toString());
-        subscription = presenter.getObservable().
-                subscribeOn(Schedulers.newThread())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(observer);
-    }
 
     @Override
     public void showLoading() {
@@ -158,12 +142,6 @@ public class SignUpFragment extends BaseFragment implements LoadDataView, View.O
         }
     }
 
-    public void onInvalidName(String error_message) {
-        tilName.setError(error_message);
-        if (error_message == null) {
-            tilName.setErrorEnabled(false);
-        }
-    }
 
     public void onInvalidPassword(String error_message) {
         tilRegistrationPassword.setError(error_message);
@@ -182,9 +160,6 @@ public class SignUpFragment extends BaseFragment implements LoadDataView, View.O
                     break;
                 case R.id.etRegistrationPassword:
                     tilRegistrationPassword.setError(null);
-                    break;
-                case R.id.etName:
-                    tilName.setError(null);
                     break;
             }
         }

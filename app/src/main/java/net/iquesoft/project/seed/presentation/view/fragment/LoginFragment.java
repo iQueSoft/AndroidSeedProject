@@ -25,10 +25,9 @@ import net.iquesoft.project.seed.utils.ToastMaker;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import rx.Observer;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
+import rx.functions.Action1;
 
 public class LoginFragment extends BaseFragment implements LoadDataView, View.OnFocusChangeListener {
 
@@ -55,37 +54,38 @@ public class LoginFragment extends BaseFragment implements LoadDataView, View.On
 
 
     private Subscription subscription;
-    private Observer<Integer> observer = new Observer<Integer>() {
+    private Action1<Boolean> action1 = new Action1<Boolean>() {
         @Override
-        public void onCompleted() {
-            hideLoading();
-            onLoggedIn();
-        }
-
-        @Override
-        public void onError(Throwable e) {
-            hideLoading();
-
-            int code = presenter.getErrorCode();
-            if (code == Constants.ERROR_EMPTY_EMAIL) {
-                onInvalidEmail(Constants.ERROR_MESSAGE_EMPTY_FIELD);
-            } else if (code == Constants.ERROR_EMPTY_PASSWORD) {
-                onInvalidPassword(Constants.ERROR_MESSAGE_EMPTY_FIELD);
-            } else if (code == Constants.ERROR_INVALID_EMAIL) {
-                onInvalidEmail(Constants.ERROR_MESSAGE_INVALID_EMAIL);
-            } else if (code == Constants.ERROR_INVALID_PASSWORD) {
-                onInvalidPassword(Constants.ERROR_MESSAGE_INVALID_PASSWORD);
-            } else if (code == Constants.ERROR_CONNECTION_LOST) {
-                showError(Constants.ERROR_MESSAGE_CONNECTION_LOST);
-            } else if (code == Constants.ERROR_UNKNOWN) {
-                showError(Constants.ERROR_MESSAGE_UNKNOWN_ERROR);
-            }
-        }
-
-        @Override
-        public void onNext(Integer code) {
+        public void call(Boolean aBoolean) {
+//            LogUtil.makeLog(" action 1 " + aBoolean + "userModel.getUserEmail() "
+//                    + userModel.getUserEmail() + "userModel.getUserName()" + userModel.getUserName());
+//            hideLoading();
+//            if (aBoolean) {
+//                onError();
+//            }
+//            ((MainActivity) getActivity()).updateUI(aBoolean);
         }
     };
+
+    private void onError() {
+        hideLoading();
+        int code = presenter.getErrorCode();
+        if (code == Constants.ERROR_EMPTY_EMAIL) {
+            onInvalidEmail(Constants.ERROR_MESSAGE_EMPTY_FIELD);
+        } else if (code == Constants.ERROR_EMPTY_PASSWORD) {
+            onInvalidPassword(Constants.ERROR_MESSAGE_EMPTY_FIELD);
+        } else if (code == Constants.ERROR_INVALID_EMAIL) {
+            onInvalidEmail(Constants.ERROR_MESSAGE_INVALID_EMAIL);
+        } else if (code == Constants.ERROR_INVALID_PASSWORD) {
+            onInvalidPassword(Constants.ERROR_MESSAGE_INVALID_PASSWORD);
+        } else if (code == Constants.ERROR_CONNECTION_LOST) {
+            showError(Constants.ERROR_MESSAGE_CONNECTION_LOST);
+        } else if (code == Constants.ERROR_UNKNOWN) {
+            showError(Constants.ERROR_MESSAGE_UNKNOWN_ERROR);
+        } else if (code == Constants.ERROR_AUTH_FAILED) {
+            showError(Constants.ERROR_MESSAGE_AUTH_FAILED);
+        }
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -113,7 +113,19 @@ public class LoginFragment extends BaseFragment implements LoadDataView, View.On
 
     @OnClick(R.id.btnLogin)
     protected void btnLoginClicked() {
-        attemptToLogIn();
+        onInvalidEmail(null);
+        onInvalidPassword(null);
+        showLoading();
+        presenter.setEmail(etLogin.getText().toString());
+        presenter.setPassword(etPassword.getText().toString());
+        if (presenter.isCredentialsValid()) {
+            subscription = presenter.getLogInObservable().
+                    subscribeOn(AndroidSchedulers.mainThread())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(action1);
+        } else {
+            onError();
+        }
     }
 
     @OnClick(R.id.tvGoToSignUp)
@@ -121,34 +133,14 @@ public class LoginFragment extends BaseFragment implements LoadDataView, View.On
         navigator.navigateToSignUpFragment(fragmentManager);
     }
 
-    private void attemptToLogIn() {
-        onInvalidEmail(null);
-        onInvalidPassword(null);
-        showLoading();
-        presenter.setLogin(etLogin.getText().toString());
-        presenter.setPassword(etPassword.getText().toString());
-        subscription = presenter.getObservable().
-                subscribeOn(Schedulers.newThread())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(observer);
-
-    }
-
-    private void onLoggedIn() {
-        showToast("Logged in");
-        navigator.navigateToMainFragment(fragmentManager);
-    }
-
     @Override
     public void showLoading() {
-        progressDialog = presenter.getProgressDialog();
+        ((MainActivity) getActivity()).showLoading();
     }
 
     @Override
     public void hideLoading() {
-        if (progressDialog != null) {
-            progressDialog.hide();
-        }
+        ((MainActivity) getActivity()).hideLoading();
     }
 
     @Override

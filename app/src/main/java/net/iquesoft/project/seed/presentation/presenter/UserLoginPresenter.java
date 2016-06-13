@@ -1,31 +1,42 @@
 package net.iquesoft.project.seed.presentation.presenter;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.support.annotation.NonNull;
+import android.util.Log;
 
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
 
 import net.iquesoft.project.seed.domain.RegularExpressionValidation;
 import net.iquesoft.project.seed.utils.Constants;
-
-import java.util.concurrent.TimeUnit;
+import net.iquesoft.project.seed.utils.LogUtil;
 
 import rx.Observable;
-import rx.exceptions.OnErrorThrowable;
-import rx.functions.Func0;
 
 public class UserLoginPresenter implements Presenter {
 
     private static UserLoginPresenter ourInstance;
-    RegularExpressionValidation validation;
+    private RegularExpressionValidation validation;
     private Context context;
     private String password;
-    private String login;
+    private String email;
     private int errorCode;
-    private GoogleSignInAccount googleSignInAccount;
+
+    // [START declare_auth]
+    private FirebaseAuth mAuth;
+    // [END declare_auth]
+
 
     private UserLoginPresenter(Context context) {
         this.context = context;
+        // [START initialize_auth]
+        mAuth = FirebaseAuth.getInstance();
+        // [END initialize_auth]
+
     }
 
     public static UserLoginPresenter getInstance(Context context) {
@@ -51,53 +62,46 @@ public class UserLoginPresenter implements Presenter {
 
     }
 
+    private boolean signIn(String email, String password) {
+        // [START sign_in_with_email]
+        return mAuth.signInWithEmailAndPassword(email, password)
+                .addOnCompleteListener((Activity) context, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        LogUtil.makeLog("signInWithEmailAndPassword " + task.isSuccessful());
+                        // If sign in fails, display a message to the user. If sign in succeeds
+                        // the auth state listener will be notified and logic to handle the
+                        // signed in user can be handled in the listener.
+                        if (!task.isSuccessful()) {
+                            Log.w("LOG", "signInWithEmailAndPassword", task.getException());
+                            errorCode = Constants.ERROR_AUTH_FAILED;
+                        }
+                    }
+                }).isComplete();
+        // [END sign_in_with_email]
+    }
 
-    public int logIn(String email, String password) throws InterruptedException {
+    public boolean isCredentialsValid() {
         validation = new RegularExpressionValidation();
         int code = validation.isEmailValid(email);
         if (code != Constants.CODE_OK) {
             errorCode = code;
-            throw new InterruptedException();
+            return false;
         }
         code = validation.isPasswordValid(password);
         if (code != Constants.CODE_OK) {
             errorCode = code;
-            throw new InterruptedException();
+            return false;
         }
-
-        /*
-         * Here should be HTTP Request
-         */
-
-        return Constants.CODE_OK;
+        return true;
     }
 
     public ProgressDialog getProgressDialog() {
         return ProgressDialog.show(context, "Logging in", "", true, true);
     }
 
-    public Observable getObservable() {
-        return observableLogging();
-    }
-
-    private Observable<Integer> observableLogging() {
-        return Observable.defer(new Func0<Observable<Integer>>() {
-            public int code;
-
-            @Override
-            public Observable<Integer> call() {
-                try {
-                     /*
-                      *  HTTP Request imitation
-                      */
-                    Thread.sleep(TimeUnit.SECONDS.toMillis(1));
-                    code = logIn(login, password);
-                } catch (InterruptedException e) {
-                    throw OnErrorThrowable.from(e);
-                }
-                return Observable.just(code);
-            }
-        });
+    public Observable getLogInObservable() {
+        return Observable.just(signIn(email, password));
     }
 
     public String getPassword() {
@@ -108,20 +112,17 @@ public class UserLoginPresenter implements Presenter {
         this.password = password;
     }
 
-    public String getLogin() {
-        return login;
+    public String getEmail() {
+        return email;
     }
 
-    public void setLogin(String login) {
-        this.login = login;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public int getErrorCode() {
         return errorCode;
     }
 
-    public void setGoogleSignInAccount(GoogleSignInAccount googleSignInAccount) {
-        this.googleSignInAccount = googleSignInAccount;
 
-    }
 }

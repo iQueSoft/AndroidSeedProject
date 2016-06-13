@@ -71,7 +71,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_above="@+id/tvGoToSignUp"
-        android:layout_centerHorizontal="true" />
+        android:layout_toStartOf="@+id/OR" />
+
+    <com.facebook.login.widget.LoginButton
+        android:id="@+id/sign_in_facebook"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/sign_in_google"
+        android:layout_alignParentEnd="true" />
 
     <TextView
         android:id="@+id/tvGoToSignUp"

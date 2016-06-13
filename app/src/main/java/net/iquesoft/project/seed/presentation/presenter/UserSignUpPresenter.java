@@ -1,16 +1,20 @@
 package net.iquesoft.project.seed.presentation.presenter;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.support.annotation.NonNull;
+import android.util.Log;
+
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
 
 import net.iquesoft.project.seed.domain.RegularExpressionValidation;
 import net.iquesoft.project.seed.utils.Constants;
 
-import java.util.concurrent.TimeUnit;
-
 import rx.Observable;
-import rx.exceptions.OnErrorThrowable;
-import rx.functions.Func0;
 
 public class UserSignUpPresenter implements Presenter {
 
@@ -18,12 +22,13 @@ public class UserSignUpPresenter implements Presenter {
     RegularExpressionValidation validation;
     private Context context;
     private String password;
-    private String login;
+    private String email;
     private int errorCode;
-    private String name;
+    private FirebaseAuth mAuth;
 
     private UserSignUpPresenter(Context context) {
         this.context = context;
+        mAuth = FirebaseAuth.getInstance();
     }
 
     public static UserSignUpPresenter getInstance(Context context) {
@@ -48,66 +53,48 @@ public class UserSignUpPresenter implements Presenter {
 
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
 
-    public void setEmail(String login) {
-        this.login = login;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public void setPassword(String password) {
         this.password = password;
     }
 
-    public Observable getObservable() {
-        return observableSigningUp();
+    public boolean signUp(String email, String password) {
+
+        // [START create_user_with_email]
+        return mAuth.createUserWithEmailAndPassword(email, password)
+                .addOnCompleteListener((Activity) context, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        Log.d("LOG", "createUserWithEmail:onComplete:" + task.isSuccessful());
+
+                        // If sign in fails, display a message to the user. If sign in succeeds
+                        // the auth state listener will be notified and logic to handle the
+                        // signed in user can be handled in the listener.
+                        if (!task.isSuccessful()) {
+                            Log.w("LOG", "signInWithCredential", task.getException());
+                            errorCode = Constants.ERROR_AUTH_FAILED;
+                        }
+                    }
+                }).isComplete();
     }
 
-    private Observable<Integer> observableSigningUp() {
-        return Observable.defer(new Func0<Observable<Integer>>() {
-            public int code;
-
-            @Override
-            public Observable<Integer> call() {
-                try {
-                     /*
-                      *  HTTP Request imitation
-                      */
-                    Thread.sleep(TimeUnit.SECONDS.toMillis(1));
-                    code = signUp(name, login, password);
-                } catch (InterruptedException e) {
-                    throw OnErrorThrowable.from(e);
-                }
-                return Observable.just(code);
-            }
-        });
-    }
-
-    public int signUp(String name, String email, String password) throws InterruptedException {
+    public boolean isCredentialsValid() {
         validation = new RegularExpressionValidation();
-        int code = validation.isNameValid(name);
+        int code = validation.isEmailValid(email);
         if (code != Constants.CODE_OK) {
             errorCode = code;
-            throw new InterruptedException();
-        }
-        code = validation.isEmailValid(email);
-        if (code != Constants.CODE_OK) {
-            errorCode = code;
-            throw new InterruptedException();
+            return false;
         }
         code = validation.isPasswordValid(password);
         if (code != Constants.CODE_OK) {
             errorCode = code;
-            throw new InterruptedException();
+            return false;
         }
-
-        /*
-         * Here should be used HTTP Request
-         */
-
-        return Constants.CODE_OK;
-
+        return true;
     }
 
     public ProgressDialog getProgressDialog() {
@@ -116,5 +103,9 @@ public class UserSignUpPresenter implements Presenter {
 
     public int getErrorCode() {
         return errorCode;
+    }
+
+    public Observable getSignUpObservable() {
+        return Observable.just(signUp(email, password));
     }
 }

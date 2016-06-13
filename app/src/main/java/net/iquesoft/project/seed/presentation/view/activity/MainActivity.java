@@ -3,6 +3,7 @@ package net.iquesoft.project.seed.presentation.view.activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
@@ -16,17 +17,28 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.facebook.FacebookSdk;
+import com.facebook.appevents.AppEventsLogger;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.OptionalPendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.auth.UserProfileChangeRequest;
 import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 
 import net.iquesoft.project.seed.R;
 import net.iquesoft.project.seed.presentation.model.UserModel;
@@ -34,7 +46,6 @@ import net.iquesoft.project.seed.presentation.navigation.Navigator;
 import net.iquesoft.project.seed.presentation.presenter.UserLoginPresenter;
 import net.iquesoft.project.seed.presentation.view.fragment.LoginFragment;
 import net.iquesoft.project.seed.utils.LogUtil;
-import net.iquesoft.project.seed.utils.ToastMaker;
 
 import butterknife.ButterKnife;
 
@@ -48,28 +59,26 @@ public class MainActivity extends BaseActivity
     private UserLoginPresenter presenter;
     private UserModel userModel;
     private com.nostra13.universalimageloader.core.ImageLoader imageLoader;
+    private FirebaseAuth mAuth;
+    private FirebaseAuth.AuthStateListener mAuthListener;
+    private GoogleSignInOptions gso;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        FacebookSdk.sdkInitialize(getApplicationContext());
+        AppEventsLogger.activateApp(this);
         navigator = Navigator.getInstance();
         presenter = UserLoginPresenter.getInstance(this);
         userModel = UserModel.getInstance();
         imageLoader = ImageLoader.getInstance();
+        imageLoader.init(ImageLoaderConfiguration.createDefault(getBaseContext()));
         ButterKnife.bind(this);
 
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestEmail()
-                .build();
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .enableAutoManage(this, new GoogleApiClient.OnConnectionFailedListener() {
-                    @Override
-                    public void onConnectionFailed(ConnectionResult connectionResult) {
-                    }
-                })
-                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
-                .build();
+        initFirebaseListener();
+        configureGoogleSignIn();
 
         if (savedInstanceState == null) {
             addFragment(R.id.fragmentContainer, new LoginFragment());
@@ -103,12 +112,74 @@ public class MainActivity extends BaseActivity
         }
     }
 
+    private void configureGoogleSignIn() {
+        // Configure Google Sign In
+        gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.default_web_client_id))
+                .requestEmail()
+                .build();
+
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .enableAutoManage(this, new GoogleApiClient.OnConnectionFailedListener() {
+                    @Override
+                    public void onConnectionFailed(ConnectionResult connectionResult) {
+                    }
+                })
+                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+                .build();
+
+    }
+
+    private void initFirebaseListener() {
+
+        // [START initialize_auth]
+        mAuth = FirebaseAuth.getInstance();
+        // [END initialize_auth]
+
+        // [START auth_state_listener]
+        mAuthListener = new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                FirebaseUser user = firebaseAuth.getCurrentUser();
+                if (user != null) {
+                    // User is signed in
+                    LogUtil.makeLog("1 onAuthStateChanged:signed_in:" + user.getUid());
+                    userModel.setUserEmail(user.getEmail());
+                    userModel.setUserId(user.getUid());
+                    userModel.setUserName(user.getDisplayName());
+                    userModel.setUserPhotoUrl(user.getPhotoUrl());
+                    checkProfileForUpdates(user);
+                    updateUI(true);
+                } else {
+                    // User is signed out
+                    updateUI(false);
+                    LogUtil.makeLog("LOG", "2 onAuthStateChanged:signed_out");
+                }
+            }
+        };
+        // [END auth_state_listener]
+
+    }
+
+    private void checkProfileForUpdates(FirebaseUser user) {
+        GoogleSignInAccount gAccount = userModel.getGoogleAccount();
+        if (gAccount != null) {
+            if (user.getDisplayName() == null && gAccount.getDisplayName() != null) {
+                new UserProfileChangeRequest.Builder().setDisplayName(gAccount.getDisplayName()).build();
+            }
+            if (user.getPhotoUrl() == null && gAccount.getPhotoUrl() != null) {
+                new UserProfileChangeRequest.Builder().setDisplayName(gAccount.getPhotoUrl().toString()).build();
+            }
+        }
+    }
+
 
     public void showLoading() {
         progressDialog = presenter.getProgressDialog();
     }
 
     public void hideLoading() {
+        LogUtil.makeLog("Hiding loading UI");
         if (progressDialog != null) {
             progressDialog.hide();
         }
@@ -122,27 +193,7 @@ public class MainActivity extends BaseActivity
     @Override
     public void onStart() {
         super.onStart();
-
-        OptionalPendingResult<GoogleSignInResult> opr = Auth.GoogleSignInApi.silentSignIn(mGoogleApiClient);
-        if (opr.isDone()) {
-            // If the user's cached credentials are valid, the OptionalPendingResult will be "done"
-            // and the GoogleSignInResult will be available instantly.
-            Log.d("LOG", "Got cached sign-in");
-            GoogleSignInResult result = opr.get();
-            handleSignInResult(result);
-        } else {
-            // If the user has not previously signed in on this device or the sign-in has expired,
-            // this asynchronous branch will attempt to sign in the user silently.  Cross-device
-            // single sign-on will occur in this branch.
-            showLoading();
-            opr.setResultCallback(new ResultCallback<GoogleSignInResult>() {
-                @Override
-                public void onResult(GoogleSignInResult googleSignInResult) {
-                    hideLoading();
-                    handleSignInResult(googleSignInResult);
-                }
-            });
-        }
+        mAuth.addAuthStateListener(mAuthListener);
     }
 
     @Override
@@ -161,17 +212,12 @@ public class MainActivity extends BaseActivity
             // Signed in successfully, show authenticated UI.
             GoogleSignInAccount acct = result.getSignInAccount();
             if (acct != null) {
+                userModel.setGoogleAccount(acct);
                 userModel.setUserName(acct.getDisplayName());
-            }
-            if (acct != null) {
                 userModel.setUserEmail(acct.getEmail());
-            }
-            if (acct != null) {
                 userModel.setUserPhotoUrl(acct.getPhotoUrl());
-                LogUtil.makeLog("PHOTO URL " + acct.getPhotoUrl());
-            }
-            if (acct != null) {
                 userModel.setUserId(acct.getId());
+                firebaseAuthWithGoogle(acct);
             }
             updateUI(true);
 
@@ -182,7 +228,40 @@ public class MainActivity extends BaseActivity
     }
 
 
+    // [START auth_with_google]
+    private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {
+        Log.d("LOG", "firebaseAuthWithGoogle:" + acct.getId());
+        // [START_EXCLUDE silent]
+        showLoading();
+        // [END_EXCLUDE]
+
+        AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
+        mAuth.signInWithCredential(credential)
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        Log.d("LOG", "signInWithCredential:onComplete:" + task.isSuccessful());
+
+                        // If sign in fails, display a message to the user. If sign in succeeds
+                        // the auth state listener will be notified and logic to handle the
+                        // signed in user can be handled in the listener.
+                        if (!task.isSuccessful()) {
+                            Log.w("LOG", "signInWithCredential", task.getException());
+                            Toast.makeText(MainActivity.this, "Authentication failed.",
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                        // [START_EXCLUDE]
+                        hideLoading();
+                        // [END_EXCLUDE]
+                    }
+                });
+    }
+    // [END auth_with_google]
+
     private void signOut() {
+
+        mAuth.signOut();
+        updateUI(false);
         Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(
                 new ResultCallback<Status>() {
                     @Override
@@ -195,55 +274,66 @@ public class MainActivity extends BaseActivity
         navigator.navigateToLogInFragment(getSupportFragmentManager());
     }
 
-    private void revokeAccess() {
-        Auth.GoogleSignInApi.revokeAccess(mGoogleApiClient).setResultCallback(
-                new ResultCallback<Status>() {
-                    @Override
-                    public void onResult(Status status) {
-                        // [START_EXCLUDE]
-                        updateUI(false);
-                        // [END_EXCLUDE]
-                    }
-                });
-    }
-
-    private void updateUI(boolean signedIn) {
-
+    public void updateUI(boolean signedIn) {
+        hideLoading();
+        LogUtil.makeLog("Updating UI");
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        View view = navigationView.getHeaderView(0);
-        TextView tvNavHeaderName = (TextView) view.findViewById(R.id.tvNavHeaderName);
-        TextView tvNavHeaderEmail = (TextView) view.findViewById(R.id.tvNavHeaderEmail);
-        ImageView ivUserPhoto = (ImageView) view.findViewById(R.id.ivNavHeaderPhoto);
-        Menu menu = navigationView.getMenu();
-        MenuItem tvNavLogOut = menu.findItem(R.id.nav_logOut);
+        View view = null;
+        Menu menu = null;
+        if (navigationView != null) {
+            view = navigationView.getHeaderView(0);
+            menu = navigationView.getMenu();
+        }
+        TextView tvNavHeaderName = null;
+        TextView tvNavHeaderEmail = null;
+        ImageView ivUserPhoto = null;
+
+        if (view != null) {
+            tvNavHeaderName = (TextView) view.findViewById(R.id.tvNavHeaderName);
+            tvNavHeaderEmail = (TextView) view.findViewById(R.id.tvNavHeaderEmail);
+            ivUserPhoto = (ImageView) view.findViewById(R.id.ivNavHeaderPhoto);
+        }
+        MenuItem tvNavLogOut = null;
+        if (menu != null) {
+            tvNavLogOut = menu.findItem(R.id.nav_logOut);
+        }
+
         if (signedIn) {
-            tvNavHeaderName.setText(userModel.getUserName());
-            tvNavHeaderEmail.setText(userModel.getUserEmail());
+            if (tvNavHeaderName != null) {
+                tvNavHeaderName.setText(userModel.getUserName());
+            }
+            if (tvNavHeaderEmail != null) {
+                tvNavHeaderEmail.setText(userModel.getUserEmail());
+            }
 
             if (userModel.getUserPhotoUrl() != null) {
                 LogUtil.makeLog("userModel.getUserPhotoUrl() " + userModel.getUserPhotoUrl());
-                imageLoader.displayImage(userModel.getUserPhotoUrl().toString(), ivUserPhoto);
+                if (ivUserPhoto != null) {
+                    imageLoader.displayImage(userModel.getUserPhotoUrl().toString(), ivUserPhoto);
+                }
             }
-            tvNavLogOut.setVisible(true);
+            if (tvNavLogOut != null) {
+                tvNavLogOut.setVisible(true);
+            }
             onLoggedIn();
         } else {
-            tvNavHeaderName.setText(R.string.user_name);
-            tvNavHeaderEmail.setText(R.string.user_email);
-            ivUserPhoto.setImageResource(R.mipmap.ic_launcher);
-            tvNavLogOut.setVisible(false);
+            if (tvNavHeaderName != null) {
+                tvNavHeaderName.setText(R.string.user_name);
+            }
+            if (tvNavHeaderEmail != null) {
+                tvNavHeaderEmail.setText(R.string.user_email);
+            }
+            if (ivUserPhoto != null) {
+                ivUserPhoto.setImageResource(R.mipmap.ic_launcher);
+            }
+            if (tvNavLogOut != null) {
+                tvNavLogOut.setVisible(false);
+            }
         }
     }
 
     private void onLoggedIn() {
-        ToastMaker.showMessage(this, "Logged in");
         navigator.navigateToMainFragment(getSupportFragmentManager());
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        mGoogleApiClient.stopAutoManage(this);
-        mGoogleApiClient.disconnect();
     }
 
     @Override
@@ -309,6 +399,14 @@ public class MainActivity extends BaseActivity
             drawer.closeDrawer(GravityCompat.START);
         }
         return true;
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (mAuthListener != null) {
+            mAuth.removeAuthStateListener(mAuthListener);
+        }
     }
 
 

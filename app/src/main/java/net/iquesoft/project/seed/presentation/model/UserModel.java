@@ -2,6 +2,8 @@ package net.iquesoft.project.seed.presentation.model;
 
 import android.net.Uri;
 
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+
 /**
  * Class which stores all variables, such as user ID, name, etc. Here are only setters and getters.
  *
@@ -15,6 +17,7 @@ public class UserModel {
     private String userId;
     private String userName;
     private String userEmail;
+    private GoogleSignInAccount googleAccount;
 
 
     private UserModel() {
@@ -59,5 +62,13 @@ public class UserModel {
 
     public void setUserId(String userId) {
         this.userId = userId;
+    }
+
+    public GoogleSignInAccount getGoogleAccount() {
+        return googleAccount;
+    }
+
+    public void setGoogleAccount(GoogleSignInAccount googleAccount) {
+        this.googleAccount = googleAccount;
     }
 }
