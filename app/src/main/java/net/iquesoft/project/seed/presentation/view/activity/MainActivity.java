@@ -44,6 +44,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.auth.UserProfileChangeRequest;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 
@@ -52,6 +53,8 @@ import net.iquesoft.project.seed.presentation.model.UserModel;
 import net.iquesoft.project.seed.presentation.navigation.Navigator;
 import net.iquesoft.project.seed.presentation.presenter.UserLoginPresenter;
 import net.iquesoft.project.seed.presentation.view.fragment.LoginFragment;
+import net.iquesoft.project.seed.utils.Constants;
+import net.iquesoft.project.seed.utils.LogUtil;
 
 import butterknife.ButterKnife;
 
@@ -84,9 +87,19 @@ public class MainActivity extends BaseActivity
         imageLoader.init(ImageLoaderConfiguration.createDefault(getBaseContext()));
         ButterKnife.bind(this);
 
+
         initFirebaseListener();
         configureGoogleSignIn();
+        subscribeOnMessaging();
 
+        // [START handle_data_extras]
+        if (getIntent().getExtras() != null) {
+            for (String key : getIntent().getExtras().keySet()) {
+                String value = getIntent().getExtras().getString(key);
+                LogUtil.makeLog("Key: " + key + " Value: " + value);
+            }
+        }
+        // [END handle_data_extras]
         if (savedInstanceState == null) {
             addFragment(R.id.fragmentContainer, new LoginFragment());
         }
@@ -117,6 +130,10 @@ public class MainActivity extends BaseActivity
         if (navigationView != null) {
             navigationView.setNavigationItemSelectedListener(this);
         }
+    }
+
+    private void subscribeOnMessaging() {
+        FirebaseMessaging.getInstance().subscribeToTopic(Constants.FIREBASE_MESSAGE);
     }
 
     private void configureGoogleSignIn() {
@@ -180,7 +197,7 @@ public class MainActivity extends BaseActivity
 
 
     public void showLoading() {
-        progressDialog = presenter.getProgressDialog();
+        progressDialog = ProgressDialog.show(this, "", "", true, true);
     }
 
     public void hideLoading() {

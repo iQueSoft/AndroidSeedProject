@@ -44,6 +44,8 @@ public class Constants {
 
     public static final String ERROR_MESSAGE_UNKNOWN_ERROR = "Unknown error";
 
+    public static final String FIREBASE_MESSAGE = "FIREBASE_MESSAGE";
+
     public static Integer[] mThumbIds = {
             R.drawable.sample_2, R.drawable.sample_3,
             R.drawable.sample_4, R.drawable.sample_5,

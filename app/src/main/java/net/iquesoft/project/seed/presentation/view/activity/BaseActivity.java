@@ -26,8 +26,8 @@ public abstract class BaseActivity extends AppCompatActivity {
      */
     protected void addFragment(int containerViewId, Fragment fragment) {
         FragmentTransaction fragmentTransaction = this.getSupportFragmentManager().beginTransaction();
-        fragmentTransaction.add(containerViewId, fragment);
-        fragmentTransaction.commit();
+        fragmentTransaction.add(containerViewId, fragment).addToBackStack(null)
+                .commit();
     }
 
     protected void replaceFragment(FragmentManager fragmentManager, Fragment destinationFragment, int containerViewId) {

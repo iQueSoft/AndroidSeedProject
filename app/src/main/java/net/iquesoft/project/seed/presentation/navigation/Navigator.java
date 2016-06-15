@@ -18,6 +18,8 @@ import net.iquesoft.project.seed.presentation.view.fragment.SignUpFragment;
 
 public class Navigator {
     private static Navigator ourInstance;
+    private String galleryStack = "galleryStack";
+    private String mainStack = "mainStack";
 
     private Navigator() {
     }
@@ -33,7 +35,6 @@ public class Navigator {
         fragmentManager.beginTransaction()
                 .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
                 .replace(R.id.fragmentContainer, new SignUpFragment())
-                .addToBackStack(null)
                 .commit();
     }
 
@@ -41,7 +42,7 @@ public class Navigator {
         fragmentManager.beginTransaction()
                 .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
                 .replace(R.id.fragmentContainer, new MainFragment())
-                .addToBackStack(null)
+                .addToBackStack(mainStack)
                 .commit();
     }
 
@@ -49,7 +50,6 @@ public class Navigator {
         fragmentManager.beginTransaction()
                 .setTransition(android.support.v4.app.FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
                 .replace(R.id.fragmentContainer, new LoginFragment())
-                .addToBackStack(null)
                 .commit();
     }
 
@@ -57,7 +57,7 @@ public class Navigator {
         fragmentManager.beginTransaction()
                 .setTransition(android.support.v4.app.FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
                 .replace(R.id.fragmentContainer, new GalleryFragment())
-                .addToBackStack(null)
+                .addToBackStack(galleryStack)
                 .commit();
     }
 
@@ -65,7 +65,6 @@ public class Navigator {
         fragmentManager.beginTransaction()
                 .setTransition(android.support.v4.app.FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
                 .replace(R.id.fragmentContainer, new GridGalleryFragment())
-                .addToBackStack(null)
                 .commit();
     }
 
@@ -73,7 +72,6 @@ public class Navigator {
         fragmentManager.beginTransaction()
                 .setTransition(android.support.v4.app.FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
                 .replace(R.id.fragmentContainer, new ScrollingGalleryFragment())
-                .addToBackStack(null)
                 .commit();
     }
 }
