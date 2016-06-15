@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -13,7 +12,6 @@ import com.google.firebase.auth.FirebaseAuth;
 
 import net.iquesoft.project.seed.domain.RegularExpressionValidation;
 import net.iquesoft.project.seed.utils.Constants;
-import net.iquesoft.project.seed.utils.LogUtil;
 
 import rx.Observable;
 
@@ -68,12 +66,10 @@ public class UserLoginPresenter implements Presenter {
                 .addOnCompleteListener((Activity) context, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
-                        LogUtil.makeLog("signInWithEmailAndPassword " + task.isSuccessful());
                         // If sign in fails, display a message to the user. If sign in succeeds
                         // the auth state listener will be notified and logic to handle the
                         // signed in user can be handled in the listener.
                         if (!task.isSuccessful()) {
-                            Log.w("LOG", "signInWithEmailAndPassword", task.getException());
                             errorCode = Constants.ERROR_AUTH_FAILED;
                         }
                     }
@@ -102,10 +98,6 @@ public class UserLoginPresenter implements Presenter {
 
     public Observable getLogInObservable() {
         return Observable.just(signIn(email, password));
-    }
-
-    public String getPassword() {
-        return password;
     }
 
     public void setPassword(String password) {

@@ -3,6 +3,7 @@ package net.iquesoft.project.seed.presentation.model;
 import android.net.Uri;
 
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.firebase.auth.FirebaseUser;
 
 /**
  * Class which stores all variables, such as user ID, name, etc. Here are only setters and getters.
@@ -18,6 +19,7 @@ public class UserModel {
     private String userName;
     private String userEmail;
     private GoogleSignInAccount googleAccount;
+    private FirebaseUser currentUser;
 
 
     private UserModel() {
@@ -70,5 +72,13 @@ public class UserModel {
 
     public void setGoogleAccount(GoogleSignInAccount googleAccount) {
         this.googleAccount = googleAccount;
+    }
+
+    public FirebaseUser getCurrentUser() {
+        return currentUser;
+    }
+
+    public void setCurrentUser(FirebaseUser currentUser) {
+        this.currentUser = currentUser;
     }
 }

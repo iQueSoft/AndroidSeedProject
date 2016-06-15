@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.facebook.login.widget.LoginButton;
 import com.google.android.gms.common.SignInButton;
 import com.nostra13.universalimageloader.core.ImageLoader;
 
@@ -106,6 +107,13 @@ public class LoginFragment extends BaseFragment implements LoadDataView, View.On
         return view;
     }
 
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        LoginButton loginButton = (LoginButton) view.findViewById(R.id.sign_in_facebook);
+        ((MainActivity) getActivity()).registerFacebookCallback(loginButton);
+    }
+
     @OnClick(R.id.sign_in_google)
     void signInGoogle() {
         ((MainActivity) getActivity()).signInGoogle();
@@ -122,7 +130,7 @@ public class LoginFragment extends BaseFragment implements LoadDataView, View.On
             subscription = presenter.getLogInObservable().
                     subscribeOn(AndroidSchedulers.mainThread())
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(action1);
+                    .subscribe();
         } else {
             onError();
         }

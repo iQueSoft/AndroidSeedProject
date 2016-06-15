@@ -11,7 +11,6 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -19,8 +18,15 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.facebook.AccessToken;
+import com.facebook.CallbackManager;
+import com.facebook.FacebookCallback;
+import com.facebook.FacebookException;
 import com.facebook.FacebookSdk;
 import com.facebook.appevents.AppEventsLogger;
+import com.facebook.login.LoginManager;
+import com.facebook.login.LoginResult;
+import com.facebook.login.widget.LoginButton;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -33,6 +39,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
@@ -45,7 +52,6 @@ import net.iquesoft.project.seed.presentation.model.UserModel;
 import net.iquesoft.project.seed.presentation.navigation.Navigator;
 import net.iquesoft.project.seed.presentation.presenter.UserLoginPresenter;
 import net.iquesoft.project.seed.presentation.view.fragment.LoginFragment;
-import net.iquesoft.project.seed.utils.LogUtil;
 
 import butterknife.ButterKnife;
 
@@ -62,6 +68,7 @@ public class MainActivity extends BaseActivity
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
     private GoogleSignInOptions gso;
+    private CallbackManager mCallbackManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -143,7 +150,6 @@ public class MainActivity extends BaseActivity
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 if (user != null) {
                     // User is signed in
-                    LogUtil.makeLog("1 onAuthStateChanged:signed_in:" + user.getUid());
                     userModel.setUserEmail(user.getEmail());
                     userModel.setUserId(user.getUid());
                     userModel.setUserName(user.getDisplayName());
@@ -153,7 +159,6 @@ public class MainActivity extends BaseActivity
                 } else {
                     // User is signed out
                     updateUI(false);
-                    LogUtil.makeLog("LOG", "2 onAuthStateChanged:signed_out");
                 }
             }
         };
@@ -179,7 +184,6 @@ public class MainActivity extends BaseActivity
     }
 
     public void hideLoading() {
-        LogUtil.makeLog("Hiding loading UI");
         if (progressDialog != null) {
             progressDialog.hide();
         }
@@ -199,7 +203,7 @@ public class MainActivity extends BaseActivity
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
+        mCallbackManager.onActivityResult(requestCode, resultCode, data);
         // Result returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
         if (requestCode == RC_SIGN_IN) {
             GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
@@ -230,7 +234,6 @@ public class MainActivity extends BaseActivity
 
     // [START auth_with_google]
     private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {
-        Log.d("LOG", "firebaseAuthWithGoogle:" + acct.getId());
         // [START_EXCLUDE silent]
         showLoading();
         // [END_EXCLUDE]
@@ -240,13 +243,11 @@ public class MainActivity extends BaseActivity
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
-                        Log.d("LOG", "signInWithCredential:onComplete:" + task.isSuccessful());
 
                         // If sign in fails, display a message to the user. If sign in succeeds
                         // the auth state listener will be notified and logic to handle the
                         // signed in user can be handled in the listener.
                         if (!task.isSuccessful()) {
-                            Log.w("LOG", "signInWithCredential", task.getException());
                             Toast.makeText(MainActivity.this, "Authentication failed.",
                                     Toast.LENGTH_SHORT).show();
                         }
@@ -262,6 +263,7 @@ public class MainActivity extends BaseActivity
 
         mAuth.signOut();
         updateUI(false);
+        LoginManager.getInstance().logOut();
         Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(
                 new ResultCallback<Status>() {
                     @Override
@@ -276,7 +278,6 @@ public class MainActivity extends BaseActivity
 
     public void updateUI(boolean signedIn) {
         hideLoading();
-        LogUtil.makeLog("Updating UI");
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         View view = null;
         Menu menu = null;
@@ -307,7 +308,6 @@ public class MainActivity extends BaseActivity
             }
 
             if (userModel.getUserPhotoUrl() != null) {
-                LogUtil.makeLog("userModel.getUserPhotoUrl() " + userModel.getUserPhotoUrl());
                 if (ivUserPhoto != null) {
                     imageLoader.displayImage(userModel.getUserPhotoUrl().toString(), ivUserPhoto);
                 }
@@ -409,5 +409,60 @@ public class MainActivity extends BaseActivity
         }
     }
 
+
+    public void registerFacebookCallback(LoginButton loginButton) {
+        mCallbackManager = CallbackManager.Factory.create();
+        loginButton.setReadPermissions("email", "public_profile");
+        loginButton.registerCallback(mCallbackManager, new FacebookCallback<LoginResult>() {
+            @Override
+            public void onSuccess(LoginResult loginResult) {
+                handleFacebookAccessToken(loginResult.getAccessToken());
+            }
+
+            @Override
+            public void onCancel() {
+                // [START_EXCLUDE]
+                updateUI(false);
+                // [END_EXCLUDE]
+            }
+
+            @Override
+            public void onError(FacebookException error) {
+                // [START_EXCLUDE]
+                updateUI(false);
+                // [END_EXCLUDE]
+            }
+        });
+        // [END initialize_fblogin]
+
+    }
+
+    // [START auth_with_facebook]
+    private void handleFacebookAccessToken(AccessToken token) {
+        // [START_EXCLUDE silent]
+        showLoading();
+        // [END_EXCLUDE]
+
+        AuthCredential credential = FacebookAuthProvider.getCredential(token.getToken());
+        mAuth.signInWithCredential(credential)
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+
+                        // If sign in fails, display a message to the user. If sign in succeeds
+                        // the auth state listener will be notified and logic to handle the
+                        // signed in user can be handled in the listener.
+                        if (!task.isSuccessful()) {
+                            Toast.makeText(MainActivity.this, "Authentication failed.",
+                                    Toast.LENGTH_SHORT).show();
+                        }
+
+                        // [START_EXCLUDE]
+                        hideLoading();
+                        // [END_EXCLUDE]
+                    }
+                });
+    }
+    // [END auth_with_facebook]
 
 }

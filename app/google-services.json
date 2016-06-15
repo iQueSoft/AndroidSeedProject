@@ -1,7 +1,9 @@
 {
   "project_info": {
     "project_number": "704932448686",
-    "project_id": "seed-906c6"
+    "firebase_url": "https://seed-906c6.firebaseio.com",
+    "project_id": "seed-906c6",
+    "storage_bucket": "seed-906c6.appspot.com"
   },
   "client": [
     {
@@ -21,6 +23,10 @@
           }
         },
         {
+          "client_id": "704932448686-v6dg6j6gjvamih9k4so2evtf1hbl3u58.apps.googleusercontent.com",
+          "client_type": 3
+        },
+        {
           "client_id": "704932448686-ucvbcadl6utub2grk08i28j4fmoijtk9.apps.googleusercontent.com",
           "client_type": 3
         }
@@ -35,11 +41,16 @@
           "status": 1
         },
         "appinvite_service": {
-          "status": 1,
-          "other_platform_oauth_client": []
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "704932448686-v6dg6j6gjvamih9k4so2evtf1hbl3u58.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         },
         "ads_service": {
-          "status": 1
+          "status": 2
         }
       }
     },
@@ -60,6 +71,10 @@
           }
         },
         {
+          "client_id": "704932448686-v6dg6j6gjvamih9k4so2evtf1hbl3u58.apps.googleusercontent.com",
+          "client_type": 3
+        },
+        {
           "client_id": "704932448686-ucvbcadl6utub2grk08i28j4fmoijtk9.apps.googleusercontent.com",
           "client_type": 3
         }
@@ -74,11 +89,16 @@
           "status": 1
         },
         "appinvite_service": {
-          "status": 1,
-          "other_platform_oauth_client": []
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "704932448686-v6dg6j6gjvamih9k4so2evtf1hbl3u58.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         },
         "ads_service": {
-          "status": 1
+          "status": 2
         }
       }
     }
