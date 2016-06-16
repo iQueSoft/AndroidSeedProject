@@ -3,6 +3,7 @@ package net.iquesoft.project.seed.presentation.model;
 import android.net.Uri;
 
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.firebase.auth.FirebaseUser;
 
 /**
@@ -20,6 +21,8 @@ public class UserModel {
     private String userEmail;
     private GoogleSignInAccount googleAccount;
     private FirebaseUser currentUser;
+    private int errorCode;
+    private GoogleApiClient googleApiClient;
 
 
     private UserModel() {
@@ -80,5 +83,21 @@ public class UserModel {
 
     public void setCurrentUser(FirebaseUser currentUser) {
         this.currentUser = currentUser;
+    }
+
+    public int getErrorCode() {
+        return errorCode;
+    }
+
+    public void setErrorCode(int errorCode) {
+        this.errorCode = errorCode;
+    }
+
+    public GoogleApiClient getGoogleApiClient() {
+        return googleApiClient;
+    }
+
+    public void setGoogleApiClient(GoogleApiClient googleApiClient) {
+        this.googleApiClient = googleApiClient;
     }
 }

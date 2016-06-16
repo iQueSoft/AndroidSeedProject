@@ -1,16 +1,14 @@
 package net.iquesoft.project.seed.presentation.presenter;
 
-import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Context;
-import android.support.annotation.NonNull;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
 
 import net.iquesoft.project.seed.domain.RegularExpressionValidation;
+import net.iquesoft.project.seed.domain.firebase.MyFirebaseAuth;
+import net.iquesoft.project.seed.presentation.model.UserModel;
 import net.iquesoft.project.seed.utils.Constants;
 
 import rx.Observable;
@@ -18,23 +16,18 @@ import rx.Observable;
 public class UserLoginPresenter implements Presenter {
 
     private static UserLoginPresenter ourInstance;
+    private final MyFirebaseAuth firebaseAuth;
     private RegularExpressionValidation validation;
     private Context context;
     private String password;
     private String email;
-    private int errorCode;
-
-    // [START declare_auth]
-    private FirebaseAuth mAuth;
-    // [END declare_auth]
+    private UserModel userModel;
 
 
     private UserLoginPresenter(Context context) {
         this.context = context;
-        // [START initialize_auth]
-        mAuth = FirebaseAuth.getInstance();
-        // [END initialize_auth]
-
+        userModel = UserModel.getInstance();
+        firebaseAuth = MyFirebaseAuth.getInstance();
     }
 
     public static UserLoginPresenter getInstance(Context context) {
@@ -61,42 +54,26 @@ public class UserLoginPresenter implements Presenter {
     }
 
     private boolean signIn(String email, String password) {
-        // [START sign_in_with_email]
-        return mAuth.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener((Activity) context, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        // If sign in fails, display a message to the user. If sign in succeeds
-                        // the auth state listener will be notified and logic to handle the
-                        // signed in user can be handled in the listener.
-                        if (!task.isSuccessful()) {
-                            errorCode = Constants.ERROR_AUTH_FAILED;
-                        }
-                    }
-                }).isComplete();
-        // [END sign_in_with_email]
+        return firebaseAuth.getEmailAndPasswordAuthentication(context, email, password);
     }
 
     public boolean isCredentialsValid() {
         validation = new RegularExpressionValidation();
         int code = validation.isEmailValid(email);
         if (code != Constants.CODE_OK) {
-            errorCode = code;
+            userModel.setErrorCode(code);
             return false;
         }
         code = validation.isPasswordValid(password);
         if (code != Constants.CODE_OK) {
-            errorCode = code;
+            userModel.setErrorCode(code);
             return false;
         }
         return true;
     }
 
-    public ProgressDialog getProgressDialog() {
-        return ProgressDialog.show(context, "Logging in", "", true, true);
-    }
 
-    public Observable getLogInObservable() {
+    public Observable<Boolean> getLogInObservable() {
         return Observable.just(signIn(email, password));
     }
 
@@ -113,8 +90,23 @@ public class UserLoginPresenter implements Presenter {
     }
 
     public int getErrorCode() {
-        return errorCode;
+        return userModel.getErrorCode();
     }
 
 
+    public FirebaseAuth.AuthStateListener getAuthListener(final Observable observable) {
+        return firebaseAuth.getAuthListener(observable);
+
+    }
+
+    public GoogleApiClient getGoogleApiClient(Context context) {
+        if (userModel.getGoogleApiClient() == null) {
+            userModel.setGoogleApiClient(firebaseAuth.getGoogleApiClient(context));
+        }
+        return userModel.getGoogleApiClient();
+    }
+
+    public void signInWithCredentials(Context context, AuthCredential credential) {
+        firebaseAuth.signInWithCredentials(context, credential);
+    }
 }

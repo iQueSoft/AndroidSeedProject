@@ -28,7 +28,6 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action1;
 
 public class LoginFragment extends BaseFragment implements LoadDataView, View.OnFocusChangeListener {
 
@@ -55,18 +54,6 @@ public class LoginFragment extends BaseFragment implements LoadDataView, View.On
 
 
     private Subscription subscription;
-    private Action1<Boolean> action1 = new Action1<Boolean>() {
-        @Override
-        public void call(Boolean aBoolean) {
-//            LogUtil.makeLog(" action 1 " + aBoolean + "userModel.getUserEmail() "
-//                    + userModel.getUserEmail() + "userModel.getUserName()" + userModel.getUserName());
-//            hideLoading();
-//            if (aBoolean) {
-//                onError();
-//            }
-//            ((MainActivity) getActivity()).updateUI(aBoolean);
-        }
-    };
 
     private void onError() {
         hideLoading();

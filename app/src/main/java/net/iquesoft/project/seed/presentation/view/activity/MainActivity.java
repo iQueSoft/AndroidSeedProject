@@ -3,7 +3,6 @@ package net.iquesoft.project.seed.presentation.view.activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
@@ -16,9 +15,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
@@ -31,19 +28,13 @@ import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
-import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
-import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
@@ -54,9 +45,10 @@ import net.iquesoft.project.seed.presentation.navigation.Navigator;
 import net.iquesoft.project.seed.presentation.presenter.UserLoginPresenter;
 import net.iquesoft.project.seed.presentation.view.fragment.LoginFragment;
 import net.iquesoft.project.seed.utils.Constants;
-import net.iquesoft.project.seed.utils.LogUtil;
 
 import butterknife.ButterKnife;
+import rx.Observable;
+import rx.functions.Func0;
 
 public class MainActivity extends BaseActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -68,6 +60,13 @@ public class MainActivity extends BaseActivity
     private UserLoginPresenter presenter;
     private UserModel userModel;
     private com.nostra13.universalimageloader.core.ImageLoader imageLoader;
+    Observable<String> observable = Observable.defer(new Func0<Observable<String>>() {
+        @Override
+        public Observable<String> call() {
+            updateUI(true);
+            return null;
+        }
+    });
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
     private GoogleSignInOptions gso;
@@ -87,19 +86,10 @@ public class MainActivity extends BaseActivity
         imageLoader.init(ImageLoaderConfiguration.createDefault(getBaseContext()));
         ButterKnife.bind(this);
 
-
         initFirebaseListener();
         configureGoogleSignIn();
         subscribeOnMessaging();
 
-        // [START handle_data_extras]
-        if (getIntent().getExtras() != null) {
-            for (String key : getIntent().getExtras().keySet()) {
-                String value = getIntent().getExtras().getString(key);
-                LogUtil.makeLog("Key: " + key + " Value: " + value);
-            }
-        }
-        // [END handle_data_extras]
         if (savedInstanceState == null) {
             addFragment(R.id.fragmentContainer, new LoginFragment());
         }
@@ -136,65 +126,15 @@ public class MainActivity extends BaseActivity
         FirebaseMessaging.getInstance().subscribeToTopic(Constants.FIREBASE_MESSAGE);
     }
 
+    //
     private void configureGoogleSignIn() {
-        // Configure Google Sign In
-        gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getString(R.string.default_web_client_id))
-                .requestEmail()
-                .build();
-
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .enableAutoManage(this, new GoogleApiClient.OnConnectionFailedListener() {
-                    @Override
-                    public void onConnectionFailed(ConnectionResult connectionResult) {
-                    }
-                })
-                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
-                .build();
-
+        mGoogleApiClient = presenter.getGoogleApiClient(this);
     }
 
     private void initFirebaseListener() {
-
-        // [START initialize_auth]
         mAuth = FirebaseAuth.getInstance();
-        // [END initialize_auth]
-
-        // [START auth_state_listener]
-        mAuthListener = new FirebaseAuth.AuthStateListener() {
-            @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                FirebaseUser user = firebaseAuth.getCurrentUser();
-                if (user != null) {
-                    // User is signed in
-                    userModel.setUserEmail(user.getEmail());
-                    userModel.setUserId(user.getUid());
-                    userModel.setUserName(user.getDisplayName());
-                    userModel.setUserPhotoUrl(user.getPhotoUrl());
-                    checkProfileForUpdates(user);
-                    updateUI(true);
-                } else {
-                    // User is signed out
-                    updateUI(false);
-                }
-            }
-        };
-        // [END auth_state_listener]
-
+        mAuthListener = presenter.getAuthListener(observable);
     }
-
-    private void checkProfileForUpdates(FirebaseUser user) {
-        GoogleSignInAccount gAccount = userModel.getGoogleAccount();
-        if (gAccount != null) {
-            if (user.getDisplayName() == null && gAccount.getDisplayName() != null) {
-                new UserProfileChangeRequest.Builder().setDisplayName(gAccount.getDisplayName()).build();
-            }
-            if (user.getPhotoUrl() == null && gAccount.getPhotoUrl() != null) {
-                new UserProfileChangeRequest.Builder().setDisplayName(gAccount.getPhotoUrl().toString()).build();
-            }
-        }
-    }
-
 
     public void showLoading() {
         progressDialog = ProgressDialog.show(this, "", "", true, true);
@@ -233,61 +173,24 @@ public class MainActivity extends BaseActivity
             // Signed in successfully, show authenticated UI.
             GoogleSignInAccount acct = result.getSignInAccount();
             if (acct != null) {
-                userModel.setGoogleAccount(acct);
-                userModel.setUserName(acct.getDisplayName());
-                userModel.setUserEmail(acct.getEmail());
-                userModel.setUserPhotoUrl(acct.getPhotoUrl());
-                userModel.setUserId(acct.getId());
-                firebaseAuthWithGoogle(acct);
+                AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
+                presenter.signInWithCredentials(MainActivity.this, credential);
             }
-            updateUI(true);
-
         } else {
             // Signed out, show unauthenticated UI.
             updateUI(false);
         }
     }
 
-
-    // [START auth_with_google]
-    private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {
-        // [START_EXCLUDE silent]
-        showLoading();
-        // [END_EXCLUDE]
-
-        AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
-        mAuth.signInWithCredential(credential)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-
-                        // If sign in fails, display a message to the user. If sign in succeeds
-                        // the auth state listener will be notified and logic to handle the
-                        // signed in user can be handled in the listener.
-                        if (!task.isSuccessful()) {
-                            Toast.makeText(MainActivity.this, "Authentication failed.",
-                                    Toast.LENGTH_SHORT).show();
-                        }
-                        // [START_EXCLUDE]
-                        hideLoading();
-                        // [END_EXCLUDE]
-                    }
-                });
-    }
-    // [END auth_with_google]
-
     private void signOut() {
-
-        mAuth.signOut();
         updateUI(false);
+        mAuth.signOut();
         LoginManager.getInstance().logOut();
         Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(
                 new ResultCallback<Status>() {
                     @Override
                     public void onResult(Status status) {
-                        // [START_EXCLUDE]
                         updateUI(false);
-                        // [END_EXCLUDE]
                     }
                 });
         navigator.navigateToLogInFragment(getSupportFragmentManager());
@@ -426,60 +329,27 @@ public class MainActivity extends BaseActivity
         }
     }
 
-
     public void registerFacebookCallback(LoginButton loginButton) {
         mCallbackManager = CallbackManager.Factory.create();
         loginButton.setReadPermissions("email", "public_profile");
         loginButton.registerCallback(mCallbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
-                handleFacebookAccessToken(loginResult.getAccessToken());
+                AuthCredential credential = FacebookAuthProvider.getCredential(loginResult.getAccessToken().getToken());
+                presenter.signInWithCredentials(MainActivity.this, credential);
             }
 
             @Override
             public void onCancel() {
-                // [START_EXCLUDE]
                 updateUI(false);
-                // [END_EXCLUDE]
             }
 
             @Override
             public void onError(FacebookException error) {
-                // [START_EXCLUDE]
                 updateUI(false);
-                // [END_EXCLUDE]
             }
         });
-        // [END initialize_fblogin]
 
     }
-
-    // [START auth_with_facebook]
-    private void handleFacebookAccessToken(AccessToken token) {
-        // [START_EXCLUDE silent]
-        showLoading();
-        // [END_EXCLUDE]
-
-        AuthCredential credential = FacebookAuthProvider.getCredential(token.getToken());
-        mAuth.signInWithCredential(credential)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-
-                        // If sign in fails, display a message to the user. If sign in succeeds
-                        // the auth state listener will be notified and logic to handle the
-                        // signed in user can be handled in the listener.
-                        if (!task.isSuccessful()) {
-                            Toast.makeText(MainActivity.this, "Authentication failed.",
-                                    Toast.LENGTH_SHORT).show();
-                        }
-
-                        // [START_EXCLUDE]
-                        hideLoading();
-                        // [END_EXCLUDE]
-                    }
-                });
-    }
-    // [END auth_with_facebook]
 
 }
