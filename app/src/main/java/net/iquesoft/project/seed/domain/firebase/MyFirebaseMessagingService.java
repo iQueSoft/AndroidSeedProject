@@ -28,8 +28,7 @@ import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
 import net.iquesoft.project.seed.R;
-import net.iquesoft.project.seed.domain.AlertDialogMaker;
-import net.iquesoft.project.seed.presentation.view.activity.MainActivity;
+import net.iquesoft.project.seed.presentation.view.activity.FirebaseMessageActivity;
 import net.iquesoft.project.seed.utils.LogUtil;
 
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
@@ -55,8 +54,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         // message, here is where that should be initiated. See sendNotification method below.
         LogUtil.makeLog("From: " + remoteMessage.getFrom());
         LogUtil.makeLog("Notification Message Body: " + remoteMessage.getNotification().getBody());
-        AlertDialogMaker dialog = new AlertDialogMaker(this, remoteMessage.getNotification().getTitle(), remoteMessage.getNotification().getBody(), null, null, 0);
-        dialog.getDialog().show();
+
 
         sendNotification(remoteMessage);
     }
@@ -68,8 +66,10 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
      * @param message FCM message body received.
      */
     private void sendNotification(RemoteMessage message) {
-        Intent intent = new Intent(this, MainActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        Intent intent = new Intent(this, FirebaseMessageActivity.class);
+        intent.putExtra("message", message.getNotification().getBody());
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
                 PendingIntent.FLAG_ONE_SHOT);
 
@@ -86,6 +86,11 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
         notificationManager.notify(0 /* ID of notification */, notificationBuilder.build());
+
+
+//        Intent intent = new Intent(this, FirebaseMessageActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//        intent.putExtra("message", remoteMessage.getNotification().getBody());
+//        startActivity(intent);
     }
 
 }

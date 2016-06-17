@@ -3,23 +3,25 @@
     package="net.iquesoft.project.seed">
 
     <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/ic_custom_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-
         <activity
             android:name="com.facebook.FacebookActivity"
             android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
             android:label="@string/app_name"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"
             android:value="@string/facebook_app_id" />
+
         <activity
-            android:name="net.iquesoft.project.seed.presentation.view.activity.MainActivity"
+            android:name=".presentation.view.activity.MainActivity"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
@@ -46,6 +48,7 @@
             </intent-filter>
         </service>
         <!-- [END firebase_iid_service] -->
+        <activity android:name=".presentation.view.activity.FirebaseMessageActivity"></activity>
     </application>
 
 </manifest>

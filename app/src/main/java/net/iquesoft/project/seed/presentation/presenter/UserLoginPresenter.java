@@ -2,6 +2,7 @@ package net.iquesoft.project.seed.presentation.presenter;
 
 import android.content.Context;
 
+import com.facebook.CallbackManager;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
@@ -109,4 +110,11 @@ public class UserLoginPresenter implements Presenter {
     public void signInWithCredentials(Context context, AuthCredential credential) {
         firebaseAuth.signInWithCredentials(context, credential);
     }
+
+    public CallbackManager getFacebookCallbackManager() {
+        if (userModel.getFacebookCallback() == null)
+            userModel.setFacebookCallback(firebaseAuth.getFacebookCallbackManager());
+        return userModel.getFacebookCallback();
+    }
+
 }

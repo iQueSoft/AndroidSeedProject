@@ -33,6 +33,7 @@ public class Navigator {
         fragmentManager.beginTransaction()
                 .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
                 .replace(R.id.fragmentContainer, new SignUpFragment())
+                .addToBackStack(null)
                 .commit();
     }
 

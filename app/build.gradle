@@ -74,6 +74,9 @@ dependencies {
     // This is only compiled into the 'facebook' variant of this app. You can build
     // a 'nofacebook' variant to test on devices with SDK < 15.
     facebookCompile 'com.facebook.android:facebook-android-sdk:4.9.0'
+
+    // CircleImageView
+    compile 'de.hdodenhof:circleimageview:2.0.0'
 }
 apply plugin: 'com.android.application'
 apply plugin: 'com.google.gms.google-services'

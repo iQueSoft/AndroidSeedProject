@@ -5,6 +5,7 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentActivity;
 
+import com.facebook.CallbackManager;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.ConnectionResult;
@@ -130,4 +131,9 @@ public class MyFirebaseAuth {
                     }
                 }).isComplete();
     }
+
+    public CallbackManager getFacebookCallbackManager() {
+        return CallbackManager.Factory.create();
+    }
+
 }

@@ -2,6 +2,7 @@ package net.iquesoft.project.seed.presentation.model;
 
 import android.net.Uri;
 
+import com.facebook.CallbackManager;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.firebase.auth.FirebaseUser;
@@ -23,6 +24,7 @@ public class UserModel {
     private FirebaseUser currentUser;
     private int errorCode;
     private GoogleApiClient googleApiClient;
+    private CallbackManager facebookCallback;
 
 
     private UserModel() {
@@ -99,5 +101,13 @@ public class UserModel {
 
     public void setGoogleApiClient(GoogleApiClient googleApiClient) {
         this.googleApiClient = googleApiClient;
+    }
+
+    public CallbackManager getFacebookCallback() {
+        return facebookCallback;
+    }
+
+    public void setFacebookCallback(CallbackManager facebookCallback) {
+        this.facebookCallback = facebookCallback;
     }
 }

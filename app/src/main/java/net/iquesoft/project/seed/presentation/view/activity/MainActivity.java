@@ -16,7 +16,6 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
 import com.facebook.FacebookSdk;
@@ -26,7 +25,6 @@ import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
@@ -47,6 +45,7 @@ import net.iquesoft.project.seed.presentation.view.fragment.LoginFragment;
 import net.iquesoft.project.seed.utils.Constants;
 
 import butterknife.ButterKnife;
+import de.hdodenhof.circleimageview.CircleImageView;
 import rx.Observable;
 import rx.functions.Func0;
 
@@ -69,8 +68,6 @@ public class MainActivity extends BaseActivity
     });
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
-    private GoogleSignInOptions gso;
-    private CallbackManager mCallbackManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -151,6 +148,7 @@ public class MainActivity extends BaseActivity
         startActivityForResult(signInIntent, RC_SIGN_IN);
     }
 
+
     @Override
     public void onStart() {
         super.onStart();
@@ -160,7 +158,7 @@ public class MainActivity extends BaseActivity
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        mCallbackManager.onActivityResult(requestCode, resultCode, data);
+        presenter.getFacebookCallbackManager().onActivityResult(requestCode, resultCode, data);
         // Result returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
         if (requestCode == RC_SIGN_IN) {
             GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
@@ -212,7 +210,7 @@ public class MainActivity extends BaseActivity
         if (view != null) {
             tvNavHeaderName = (TextView) view.findViewById(R.id.tvNavHeaderName);
             tvNavHeaderEmail = (TextView) view.findViewById(R.id.tvNavHeaderEmail);
-            ivUserPhoto = (ImageView) view.findViewById(R.id.ivNavHeaderPhoto);
+            ivUserPhoto = (CircleImageView) view.findViewById(R.id.ivNavHeaderPhoto);
         }
         MenuItem tvNavLogOut = null;
         if (menu != null) {
@@ -266,6 +264,7 @@ public class MainActivity extends BaseActivity
                 super.onBackPressed();
             }
         }
+
     }
 
     @Override
@@ -330,9 +329,9 @@ public class MainActivity extends BaseActivity
     }
 
     public void registerFacebookCallback(LoginButton loginButton) {
-        mCallbackManager = CallbackManager.Factory.create();
+        presenter.getFacebookCallbackManager();
         loginButton.setReadPermissions("email", "public_profile");
-        loginButton.registerCallback(mCallbackManager, new FacebookCallback<LoginResult>() {
+        loginButton.registerCallback(presenter.getFacebookCallbackManager(), new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
                 AuthCredential credential = FacebookAuthProvider.getCredential(loginResult.getAccessToken().getToken());
