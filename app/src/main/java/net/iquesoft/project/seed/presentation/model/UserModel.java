@@ -25,6 +25,8 @@ public class UserModel {
     private int errorCode;
     private GoogleApiClient googleApiClient;
     private CallbackManager facebookCallback;
+    private String userPassword;
+    private FirebaseUser firebaseUser;
 
 
     private UserModel() {
@@ -109,5 +111,21 @@ public class UserModel {
 
     public void setFacebookCallback(CallbackManager facebookCallback) {
         this.facebookCallback = facebookCallback;
+    }
+
+    public String getUserPassword() {
+        return userPassword;
+    }
+
+    public void setUserPassword(String userPassword) {
+        this.userPassword = userPassword;
+    }
+
+    public FirebaseUser getFirebaseUser() {
+        return firebaseUser;
+    }
+
+    public void setFirebaseUser(FirebaseUser firebaseUser) {
+        this.firebaseUser = firebaseUser;
     }
 }

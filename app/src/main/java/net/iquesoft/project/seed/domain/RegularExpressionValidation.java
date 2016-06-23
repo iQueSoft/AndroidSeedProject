@@ -3,66 +3,71 @@ package net.iquesoft.project.seed.domain;
 import android.text.TextUtils;
 import android.util.Patterns;
 
-import net.iquesoft.project.seed.utils.Constants;
+import net.iquesoft.project.seed.domain.exception.EmptyFieldException;
+import net.iquesoft.project.seed.domain.exception.InvalidEmailException;
+import net.iquesoft.project.seed.domain.exception.InvalidIpAddressException;
+import net.iquesoft.project.seed.domain.exception.InvalidNameException;
+import net.iquesoft.project.seed.domain.exception.InvalidPasswordException;
+import net.iquesoft.project.seed.domain.exception.InvalidWebUrlException;
 
 import java.util.regex.Pattern;
 
 public class RegularExpressionValidation {
 
-    public int isNameValid(String name) {
+    public boolean isNameValid(String name) throws InvalidNameException, EmptyFieldException {
         String regEx = "[a-zA-Z0-9-_]+";
 
         if (TextUtils.isEmpty(name)) {
-            return Constants.ERROR_EMPTY_NAME;
+            throw new EmptyFieldException();
         } else if (!Pattern.compile(regEx).matcher(name).matches()) {
-            return Constants.ERROR_INVALID_NAME;
+            throw new InvalidNameException();
         } else {
-            return Constants.CODE_OK;
+            return true;
         }
     }
 
-    public int isEmailValid(String email) {
+    public boolean isEmailValid(String email) throws InvalidEmailException, EmptyFieldException {
         String regEx = "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@"
                 + "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
 
         if (TextUtils.isEmpty(email)) {
-            return Constants.ERROR_EMPTY_EMAIL;
+            throw new EmptyFieldException();
         } else if (!Pattern.compile(regEx).matcher(email).matches()) {
-            return Constants.ERROR_INVALID_EMAIL;
+            throw new InvalidEmailException();
         } else {
-            return Constants.CODE_OK;
+            return true;
         }
     }
 
-    public int isPasswordValid(String password) {
+    public boolean isPasswordValid(String password) throws EmptyFieldException, InvalidPasswordException {
         String regEx = "[a-zA-Z0-9]{4,}";
         if (TextUtils.isEmpty(password)) {
-            return Constants.ERROR_EMPTY_PASSWORD;
+            throw new EmptyFieldException();
         } else if (!Pattern.compile(regEx).matcher(password).matches()) {
-            return Constants.ERROR_INVALID_PASSWORD;
+            throw new InvalidPasswordException();
         } else {
-            return Constants.CODE_OK;
+            return true;
         }
     }
 
-    public int isIpAddressValid(String ipAddress) {
+    public boolean isIpAddressValid(String ipAddress) throws EmptyFieldException, InvalidIpAddressException {
         if (TextUtils.isEmpty(ipAddress)) {
-            return Constants.ERROR_EMPTY_FIELD;
+            throw new EmptyFieldException();
         } else if (!Patterns.IP_ADDRESS.matcher(ipAddress).matches()) {
-            return Constants.ERROR_INVALID_IP_ADDRESS;
+            throw new InvalidIpAddressException();
         } else {
-            return Constants.CODE_OK;
+            return true;
         }
 
     }
 
-    public int isWebUrlValid(String webUrl) {
+    public boolean isWebUrlValid(String webUrl) throws EmptyFieldException, InvalidWebUrlException {
         if (TextUtils.isEmpty(webUrl)) {
-            return Constants.ERROR_EMPTY_FIELD;
+            throw new EmptyFieldException();
         } else if (!Patterns.WEB_URL.matcher(webUrl).matches()) {
-            return Constants.ERROR_INVALID_WEB_URL;
+            throw new InvalidWebUrlException();
         } else {
-            return Constants.CODE_OK;
+            return true;
         }
 
     }

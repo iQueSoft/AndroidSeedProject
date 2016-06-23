@@ -48,6 +48,7 @@
             android:textSize="@dimen/textLarge" />
     </android.support.design.widget.TextInputLayout>
 
+    <include layout="@layout/view_progress" />
     <Button
         android:id="@+id/btnSignUp"
         style="@style/AppTheme.Button"

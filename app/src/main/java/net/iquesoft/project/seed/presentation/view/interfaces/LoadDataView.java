@@ -1,4 +1,4 @@
-package net.iquesoft.project.seed.presentation.view.fragment;
+package net.iquesoft.project.seed.presentation.view.interfaces;
 
 public interface LoadDataView {
     /**
@@ -10,16 +10,6 @@ public interface LoadDataView {
      * Hide a loading view.
      */
     void hideLoading();
-
-    /**
-     * Show a retry view in case of an error when retrieving data.
-     */
-    void showRetry();
-
-    /**
-     * Hide a retry view shown if there was an error when retrieving data.
-     */
-    void hideRetry();
 
     /**
      * Show an error message

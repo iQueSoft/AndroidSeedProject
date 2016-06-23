@@ -16,23 +16,15 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.facebook.FacebookCallback;
-import com.facebook.FacebookException;
 import com.facebook.FacebookSdk;
 import com.facebook.appevents.AppEventsLogger;
 import com.facebook.login.LoginManager;
-import com.facebook.login.LoginResult;
-import com.facebook.login.widget.LoginButton;
 import com.google.android.gms.auth.api.Auth;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
-import com.google.firebase.auth.AuthCredential;
-import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
@@ -46,8 +38,6 @@ import net.iquesoft.project.seed.utils.Constants;
 
 import butterknife.ButterKnife;
 import de.hdodenhof.circleimageview.CircleImageView;
-import rx.Observable;
-import rx.functions.Func0;
 
 public class MainActivity extends BaseActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -59,13 +49,7 @@ public class MainActivity extends BaseActivity
     private UserLoginPresenter presenter;
     private UserModel userModel;
     private com.nostra13.universalimageloader.core.ImageLoader imageLoader;
-    Observable<String> observable = Observable.defer(new Func0<Observable<String>>() {
-        @Override
-        public Observable<String> call() {
-            updateUI(true);
-            return null;
-        }
-    });
+
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
 
@@ -123,79 +107,38 @@ public class MainActivity extends BaseActivity
         FirebaseMessaging.getInstance().subscribeToTopic(Constants.FIREBASE_MESSAGE);
     }
 
-    //
     private void configureGoogleSignIn() {
         mGoogleApiClient = presenter.getGoogleApiClient(this);
     }
 
     private void initFirebaseListener() {
-        mAuth = FirebaseAuth.getInstance();
-        mAuthListener = presenter.getAuthListener(observable);
+        presenter.initFirebaseListener();
     }
 
-    public void showLoading() {
-        progressDialog = ProgressDialog.show(this, "", "", true, true);
-    }
 
-    public void hideLoading() {
-        if (progressDialog != null) {
-            progressDialog.hide();
-        }
-    }
-
-    public void signInGoogle() {
-        Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
-        startActivityForResult(signInIntent, RC_SIGN_IN);
-    }
 
 
     @Override
     public void onStart() {
         super.onStart();
-        mAuth.addAuthStateListener(mAuthListener);
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        presenter.getFacebookCallbackManager().onActivityResult(requestCode, resultCode, data);
-        // Result returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
-        if (requestCode == RC_SIGN_IN) {
-            GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
-            handleSignInResult(result);
-        }
-    }
-
-    private void handleSignInResult(GoogleSignInResult result) {
-        if (result.isSuccess()) {
-            // Signed in successfully, show authenticated UI.
-            GoogleSignInAccount acct = result.getSignInAccount();
-            if (acct != null) {
-                AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
-                presenter.signInWithCredentials(MainActivity.this, credential);
-            }
-        } else {
-            // Signed out, show unauthenticated UI.
-            updateUI(false);
-        }
+        presenter.getFirebaseAuth().addAuthStateListener(presenter.getAuthListener());
     }
 
     private void signOut() {
-        updateUI(false);
-        mAuth.signOut();
+        updateUI(null);
+        presenter.getFirebaseAuth().signOut();
         LoginManager.getInstance().logOut();
         Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(
                 new ResultCallback<Status>() {
                     @Override
                     public void onResult(Status status) {
-                        updateUI(false);
+                        updateUI(null);
                     }
                 });
         navigator.navigateToLogInFragment(getSupportFragmentManager());
     }
 
-    public void updateUI(boolean signedIn) {
-        hideLoading();
+    public void updateUI(FirebaseUser firebaseUser) {
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         View view = null;
         Menu menu = null;
@@ -217,17 +160,17 @@ public class MainActivity extends BaseActivity
             tvNavLogOut = menu.findItem(R.id.nav_logOut);
         }
 
-        if (signedIn) {
+        if (firebaseUser != null) {
             if (tvNavHeaderName != null) {
-                tvNavHeaderName.setText(userModel.getUserName());
+                tvNavHeaderName.setText(firebaseUser.getDisplayName());
             }
             if (tvNavHeaderEmail != null) {
-                tvNavHeaderEmail.setText(userModel.getUserEmail());
+                tvNavHeaderEmail.setText(firebaseUser.getEmail());
             }
 
-            if (userModel.getUserPhotoUrl() != null) {
+            if (firebaseUser.getPhotoUrl() != null) {
                 if (ivUserPhoto != null) {
-                    imageLoader.displayImage(userModel.getUserPhotoUrl().toString(), ivUserPhoto);
+                    imageLoader.displayImage(firebaseUser.getPhotoUrl().toString(), ivUserPhoto);
                 }
             }
             if (tvNavLogOut != null) {
@@ -264,7 +207,6 @@ public class MainActivity extends BaseActivity
                 super.onBackPressed();
             }
         }
-
     }
 
     @Override
@@ -312,7 +254,6 @@ public class MainActivity extends BaseActivity
             signOut();
         }
 
-
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer != null) {
             drawer.closeDrawer(GravityCompat.START);
@@ -323,32 +264,18 @@ public class MainActivity extends BaseActivity
     @Override
     protected void onStop() {
         super.onStop();
-        if (mAuthListener != null) {
-            mAuth.removeAuthStateListener(mAuthListener);
+        if (presenter.getAuthListener() != null) {
+            presenter.getFirebaseAuth().removeAuthStateListener(presenter.getAuthListener());
         }
     }
 
-    public void registerFacebookCallback(LoginButton loginButton) {
-        presenter.getFacebookCallbackManager();
-        loginButton.setReadPermissions("email", "public_profile");
-        loginButton.registerCallback(presenter.getFacebookCallbackManager(), new FacebookCallback<LoginResult>() {
-            @Override
-            public void onSuccess(LoginResult loginResult) {
-                AuthCredential credential = FacebookAuthProvider.getCredential(loginResult.getAccessToken().getToken());
-                presenter.signInWithCredentials(MainActivity.this, credential);
-            }
-
-            @Override
-            public void onCancel() {
-                updateUI(false);
-            }
-
-            @Override
-            public void onError(FacebookException error) {
-                updateUI(false);
-            }
-        });
-
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        presenter.getFacebookCallbackManager().onActivityResult(requestCode, resultCode, data);
+        // Result returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
+        if (requestCode == Constants.RC_SIGN_IN) {
+            presenter.handleGoogleSignInResult(Auth.GoogleSignInApi.getSignInResultFromIntent(data));
+        }
     }
-
 }

@@ -2,25 +2,38 @@ package net.iquesoft.project.seed.domain.exception;
 
 import android.content.Context;
 
+import net.iquesoft.project.seed.R;
+
 public class ErrorMessageFactory {
 
     private ErrorMessageFactory() {
+        //empty
     }
-
 
     /**
      * Creates a String representing an error message.
      *
-     * @param context   Context needed to retrieve string resources.
+     * @param context Context needed to retrieve string resources.
      * @param exception An exception used as a condition to retrieve the correct error message.
      * @return {@link String} an error message.
      */
-    public static String create(Context context, Class<Exception> exception) {
+    public static String create(Context context, Exception exception) {
+        String message = context.getString(R.string.exception_message_generic);
 
-        /*
-         * Here should be realised message creating logic.
-         *  Define a type of the error and return correct message
-         */
-        return "Error message";
+        if (exception instanceof InvalidEmailException) {
+            message = context.getString(R.string.exception_message_invalid_email);
+        } else if (exception instanceof InvalidNameException) {
+            message = context.getString(R.string.exception_message_invalid_name);
+        } else if (exception instanceof InvalidIpAddressException) {
+            message = context.getString(R.string.exception_message_invalid_ip_address);
+        } else if (exception instanceof InvalidPasswordException) {
+            message = context.getString(R.string.exception_message_invalid_password);
+        } else if (exception instanceof InvalidWebUrlException) {
+            message = context.getString(R.string.exception_message_invalid_web_url);
+        } else if (exception instanceof EmptyFieldException) {
+            message = context.getString(R.string.exception_message_empty_field);
+        }
+
+        return message;
     }
 }

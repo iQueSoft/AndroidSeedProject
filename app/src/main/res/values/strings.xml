@@ -29,4 +29,12 @@
     <string name="userPhoto">UserPhoto</string>
     <string name="user_email_com">user@email.com</string>
     <string name="or">OR</string>
+    <string name="exception_message_generic">There was an application error</string>
+    <string name="exception_message_invalid_email">Invalid email</string>
+    <string name="exception_message_invalid_name">Invalid name</string>
+    <string name="exception_message_invalid_ip_address">Invalid IP adress</string>
+    <string name="exception_message_invalid_password">Iinvalid password</string>
+    <string name="exception_message_invalid_web_url">Invalid web URL</string>
+    <string name="error_message_authentication_error">Authentication error</string>
+    <string name="exception_message_empty_field">This field is required</string>
 </resources>
