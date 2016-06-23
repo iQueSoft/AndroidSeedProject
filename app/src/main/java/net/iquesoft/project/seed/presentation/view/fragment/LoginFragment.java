@@ -14,10 +14,8 @@ import android.widget.TextView;
 import com.facebook.login.widget.LoginButton;
 import com.google.android.gms.common.SignInButton;
 import com.google.firebase.auth.FirebaseUser;
-import com.nostra13.universalimageloader.core.ImageLoader;
 
 import net.iquesoft.project.seed.R;
-import net.iquesoft.project.seed.presentation.model.UserModel;
 import net.iquesoft.project.seed.presentation.navigation.Navigator;
 import net.iquesoft.project.seed.presentation.presenter.UserLoginPresenter;
 import net.iquesoft.project.seed.presentation.view.activity.MainActivity;
@@ -30,10 +28,6 @@ import butterknife.OnClick;
 
 public class LoginFragment extends BaseFragment implements LoginView, View.OnFocusChangeListener {
 
-
-    UserModel userModel;
-    UserLoginPresenter presenter;
-    ImageLoader imageLoader;
 
     @BindView(R.id.rl_progress)
     RelativeLayout rl_progress;
@@ -51,6 +45,7 @@ public class LoginFragment extends BaseFragment implements LoginView, View.OnFoc
     TextInputEditText etLogin;
     @BindView(R.id.etPassword)
     TextInputEditText etPassword;
+    private UserLoginPresenter presenter;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -58,8 +53,6 @@ public class LoginFragment extends BaseFragment implements LoginView, View.OnFoc
         this.presenter = UserLoginPresenter.getInstance(getActivity());
         this.navigator = Navigator.getInstance();
         this.fragmentManager = getFragmentManager();
-        this.userModel = UserModel.getInstance();
-        this.imageLoader = ImageLoader.getInstance();
     }
 
     @Nullable
@@ -129,7 +122,11 @@ public class LoginFragment extends BaseFragment implements LoginView, View.OnFoc
 
     @Override
     public void updateUI(FirebaseUser firebaseUser) {
-        ((MainActivity) getActivity()).updateUI(firebaseUser);
+        if (firebaseUser != null) {
+            ((MainActivity) getActivity()).showUserInfoInUI(firebaseUser);
+        } else {
+            ((MainActivity) getActivity()).showDefaultUserInUI();
+        }
     }
 
     @Override

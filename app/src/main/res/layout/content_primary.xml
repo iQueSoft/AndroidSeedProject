@@ -5,11 +5,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context=".presentation.view.activity.MainActivity"
-    tools:showIn="@layout/app_bar_main">
+    tools:context="net.iquesoft.project.seed.presentation.view.activity.PrimaryActivity"
+    tools:showIn="@layout/app_bar_primary">
 
     <FrameLayout
-        android:id="@+id/fragmentContainer"
+        android:id="@+id/fragmentContainer_primary"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 

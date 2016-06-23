@@ -86,11 +86,8 @@ public class UserLoginPresenter implements Presenter, OnCompleteListener {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 FirebaseUser user = firebaseAuth.getCurrentUser();
-                if (user != null) {
-                    fragmentView.updateUI(user);
-                } else {
-                    fragmentView.updateUI(null);
-                }
+                userModel.setFirebaseUser(user);
+                fragmentView.updateUI(user);
             }
         };
     }
@@ -141,6 +138,11 @@ public class UserLoginPresenter implements Presenter, OnCompleteListener {
         firebaseAuth.getEmailAndPasswordAuthentication(email, password).addOnCompleteListener((Activity) context, this);
     }
 
+    public void logInWithGoogle(FragmentActivity activity) {
+        this.fragmentView.showLoading();
+        Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
+        activity.startActivityForResult(signInIntent, Constants.RC_SIGN_IN);
+    }
     private void showPasswordError(DefaultErrorBundle errorBundle) {
         String errorMessage = ErrorMessageFactory.create(context,
                 errorBundle.getException());
@@ -168,11 +170,6 @@ public class UserLoginPresenter implements Presenter, OnCompleteListener {
         }
     }
 
-    public void logInWithGoogle(FragmentActivity activity) {
-        this.fragmentView.showLoading();
-        Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
-        activity.startActivityForResult(signInIntent, Constants.RC_SIGN_IN);
-    }
 
     public FirebaseAuth getFirebaseAuth() {
         return mAuth;
@@ -215,5 +212,9 @@ public class UserLoginPresenter implements Presenter, OnCompleteListener {
                 fragmentView.updateUI(null);
             }
         });
+    }
+
+    public FirebaseUser getFirebaseUser() {
+        return userModel.getFirebaseUser();
     }
 }

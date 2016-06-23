@@ -1,10 +1,14 @@
 package net.iquesoft.project.seed.presentation.navigation;
 
 
+import android.content.Context;
+import android.content.Intent;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 
 import net.iquesoft.project.seed.R;
+import net.iquesoft.project.seed.presentation.view.activity.MainActivity;
+import net.iquesoft.project.seed.presentation.view.activity.PrimaryActivity;
 import net.iquesoft.project.seed.presentation.view.fragment.GalleryFragment;
 import net.iquesoft.project.seed.presentation.view.fragment.GridGalleryFragment;
 import net.iquesoft.project.seed.presentation.view.fragment.LoginFragment;
@@ -33,7 +37,6 @@ public class Navigator {
         fragmentManager.beginTransaction()
                 .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
                 .replace(R.id.fragmentContainer, new SignUpFragment())
-                .addToBackStack(null)
                 .commit();
     }
 
@@ -49,14 +52,13 @@ public class Navigator {
         fragmentManager.beginTransaction()
                 .setTransition(android.support.v4.app.FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
                 .replace(R.id.fragmentContainer, new LoginFragment())
-                .addToBackStack(null)
                 .commit();
     }
 
-    public void navigateToGalleryFragment(FragmentManager fragmentManager) {
+    public void navigateToGalleryFragment(FragmentManager fragmentManager, int fragmentContainer) {
         fragmentManager.beginTransaction()
                 .setTransition(android.support.v4.app.FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-                .replace(R.id.fragmentContainer, new GalleryFragment())
+                .replace(fragmentContainer, new GalleryFragment())
                 .addToBackStack(null)
                 .commit();
     }
@@ -75,5 +77,19 @@ public class Navigator {
                 .replace(R.id.fragmentContainer, new ScrollingGalleryFragment())
                 .addToBackStack(null)
                 .commit();
+    }
+
+    public void navigateToPrimaryActivity(Context context) {
+        context.startActivity(new Intent(context, PrimaryActivity.class));
+    }
+
+    public void navigateToMainActivity(Context context) {
+        context.startActivity(new Intent(context, MainActivity.class));
+    }
+
+    public void navigateToMainActivity(Context context, String extra) {
+        Intent intent = new Intent(context, MainActivity.class);
+        intent.putExtra("EXTRA", extra);
+        context.startActivity(intent);
     }
 }

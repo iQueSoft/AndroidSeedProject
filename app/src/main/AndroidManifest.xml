@@ -48,7 +48,11 @@
             </intent-filter>
         </service>
         <!-- [END firebase_iid_service] -->
-        <activity android:name=".presentation.view.activity.FirebaseMessageActivity"></activity>
+        <activity android:name=".presentation.view.activity.FirebaseMessageActivity" />
+        <activity
+            android:name=".presentation.view.activity.PrimaryActivity"
+            android:label="@string/title_activity_primary"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>
