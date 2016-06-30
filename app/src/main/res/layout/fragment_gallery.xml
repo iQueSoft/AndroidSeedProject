@@ -9,7 +9,7 @@
     android:paddingTop="@dimen/activity_vertical_margin">
 
     <Button
-        android:id="@+id/btnToGridGallery"
+        android:id="@+id/btnGoToGridGallery"
         style="@style/AppTheme.Button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -17,7 +17,7 @@
         android:text="@string/grid_gallery" />
 
     <Button
-        android:id="@+id/btnToScrollingGallery"
+        android:id="@+id/btnGoToScrollingGallery"
         style="@style/AppTheme.Button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

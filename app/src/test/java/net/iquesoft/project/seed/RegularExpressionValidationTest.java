@@ -1,7 +1,10 @@
 package net.iquesoft.project.seed;
 
 import net.iquesoft.project.seed.domain.RegularExpressionValidation;
-import net.iquesoft.project.seed.utils.Constants;
+import net.iquesoft.project.seed.domain.exception.EmptyFieldException;
+import net.iquesoft.project.seed.domain.exception.InvalidEmailException;
+import net.iquesoft.project.seed.domain.exception.InvalidNameException;
+import net.iquesoft.project.seed.domain.exception.InvalidPasswordException;
 
 import org.junit.Test;
 
@@ -12,27 +15,24 @@ public class RegularExpressionValidationTest {
 
 
     @Test
-    public void testIsEmailValid() {
-        int expectedValue = Constants.CODE_OK;
+    public void testIsEmailValid() throws InvalidEmailException, EmptyFieldException {
         String s = "testing1.m_m2@email3.com4.ua5.net";
-        int actualValue = validation.isEmailValid(s);
-        assertEquals("Email " + s + " validation failed", expectedValue, actualValue);
+        boolean actualValue = validation.isEmailValid(s);
+        assertEquals("Email " + s + " validation failed", true, actualValue);
 
     }
 
     @Test
-    public void testIsNameValid() {
-        int expectedValue = Constants.CODE_OK;
+    public void testIsNameValid() throws InvalidNameException, EmptyFieldException {
         String s = "Testing_Name123-abc";
-        int actualValue = validation.isNameValid(s);
-        assertEquals("Name " + s + " validation failed", expectedValue, actualValue);
+        boolean actualValue = validation.isNameValid(s);
+        assertEquals("Name " + s + " validation failed", true, actualValue);
     }
 
     @Test
-    public void testIsPasswordValid() {
-        int expectedValue = Constants.CODE_OK;
+    public void testIsPasswordValid() throws EmptyFieldException, InvalidPasswordException {
         String s = "Password123";
-        int actualValue = validation.isPasswordValid(s);
-        assertEquals("Password " + s + " validation failed", expectedValue, actualValue);
+        boolean actualValue = validation.isPasswordValid(s);
+        assertEquals("Password " + s + " validation failed", true, actualValue);
     }
 }

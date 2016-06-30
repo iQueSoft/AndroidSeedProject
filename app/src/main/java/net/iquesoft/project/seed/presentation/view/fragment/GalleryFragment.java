@@ -17,9 +17,9 @@ import butterknife.OnClick;
 public class GalleryFragment extends BaseFragment {
 
 
-    @BindView(R.id.btnToGridGallery)
+    @BindView(R.id.btnGoToGridGallery)
     Button btnToGridGallery;
-    @BindView(R.id.btnToScrollingGallery)
+    @BindView(R.id.btnGoToScrollingGallery)
     Button btnToScrollingGallery;
 
     @Override
@@ -38,12 +38,12 @@ public class GalleryFragment extends BaseFragment {
     }
 
 
-    @OnClick(R.id.btnToGridGallery)
+    @OnClick(R.id.btnGoToGridGallery)
     void goToGridGallery() {
         navigator.navigateToGridGalleryFragment(fragmentManager);
     }
 
-    @OnClick(R.id.btnToScrollingGallery)
+    @OnClick(R.id.btnGoToScrollingGallery)
     void goToScrollingGallery() {
         navigator.navigateToScrollingGalleryFragment(fragmentManager);
     }

@@ -28,7 +28,7 @@ import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
 import net.iquesoft.project.seed.R;
-import net.iquesoft.project.seed.presentation.view.activity.FirebaseMessageActivity;
+import net.iquesoft.project.seed.presentation.view.activity.MainActivity;
 import net.iquesoft.project.seed.utils.LogUtil;
 
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
@@ -66,12 +66,13 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
      * @param message FCM message body received.
      */
     private void sendNotification(RemoteMessage message) {
-        Intent intent = new Intent(this, FirebaseMessageActivity.class);
-        intent.putExtra("message", message.getNotification().getBody());
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(intent);
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.putExtra("MESSAGE", message.getNotification().getBody());
+        intent.putExtra("TITLE", message.getNotification().getTitle());
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
                 PendingIntent.FLAG_ONE_SHOT);
+
 
         Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)

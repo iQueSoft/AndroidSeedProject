@@ -8,7 +8,7 @@
     <string name="login">Log in</string>
     <string name="email">Email</string>
     <string name="password">Password</string>
-    <string name="create_account">Still has no account? Sign up</string>
+    <string name="create_account">Still have no account? Sign up</string>
     <string name="invalid_email">Invalid email</string>
     <string name="sign_up">Sign Up</string>
     <string name="have_already_an_account_log_in">Have already an account? Log in!</string>

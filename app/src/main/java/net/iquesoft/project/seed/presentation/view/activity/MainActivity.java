@@ -32,6 +32,7 @@ import net.iquesoft.project.seed.presentation.navigation.Navigator;
 import net.iquesoft.project.seed.presentation.presenter.UserLoginPresenter;
 import net.iquesoft.project.seed.presentation.view.fragment.LoginFragment;
 import net.iquesoft.project.seed.utils.Constants;
+import net.iquesoft.project.seed.utils.LogUtil;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -71,6 +72,15 @@ public class MainActivity extends BaseActivity
         configureGoogleSignIn();
         subscribeOnMessaging();
 
+        // Handle possible data accompanying notification message.
+        // [START handle_data_extras]
+        if (getIntent().getExtras() != null) {
+            for (String key : getIntent().getExtras().keySet()) {
+                String value = getIntent().getExtras().getString(key);
+                LogUtil.makeLog("Key: " + key + " Value: " + value);
+            }
+        }
+        // [END handle_data_extras]
         if (savedInstanceState == null) {
             addFragment(R.id.fragmentContainer, new LoginFragment());
         }
