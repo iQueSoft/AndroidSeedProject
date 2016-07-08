@@ -34,6 +34,7 @@ public class ActivityModule {
     /**
      * Expose the activity to dependents in the graph.
      */
+
     @Provides
     Activity activity() {
         return this.activity;

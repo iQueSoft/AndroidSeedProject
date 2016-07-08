@@ -8,7 +8,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 
 import net.iquesoft.project.seed.R;
-import net.iquesoft.project.seed.presentation.AndroidApplication;
+import net.iquesoft.project.seed.presentation.di.components.LoginComponent;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -32,8 +32,7 @@ public class GalleryFragment extends BaseFragment {
 
     @Override
     void initializeInjection() {
-        AndroidApplication.get(getActivity()).getApplicationComponent().inject(this);
-
+        getComponent(LoginComponent.class).inject(this);
     }
 
     @Nullable

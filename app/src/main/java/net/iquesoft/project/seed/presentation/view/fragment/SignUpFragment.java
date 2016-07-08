@@ -14,10 +14,12 @@ import android.widget.TextView;
 import com.google.firebase.auth.FirebaseUser;
 
 import net.iquesoft.project.seed.R;
-import net.iquesoft.project.seed.presentation.AndroidApplication;
+import net.iquesoft.project.seed.presentation.di.components.LoginComponent;
 import net.iquesoft.project.seed.presentation.presenter.UserSignUpPresenter;
 import net.iquesoft.project.seed.presentation.view.interfaces.LoginView;
 import net.iquesoft.project.seed.utils.ToastMaker;
+
+import javax.inject.Inject;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -25,7 +27,7 @@ import butterknife.OnClick;
 
 
 public class SignUpFragment extends BaseFragment implements LoginView, View.OnFocusChangeListener {
-
+    @Inject
     UserSignUpPresenter presenter;
     @BindView(R.id.rl_progress)
     RelativeLayout rl_progress;
@@ -45,7 +47,6 @@ public class SignUpFragment extends BaseFragment implements LoginView, View.OnFo
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        presenter = UserSignUpPresenter.getInstance(getActivity());
         fragmentManager = getFragmentManager();
 
 
@@ -53,8 +54,7 @@ public class SignUpFragment extends BaseFragment implements LoginView, View.OnFo
 
     @Override
     void initializeInjection() {
-        AndroidApplication.get(getActivity()).getApplicationComponent().inject(this);
-
+        getComponent(LoginComponent.class).inject(this);
     }
 
     @Nullable

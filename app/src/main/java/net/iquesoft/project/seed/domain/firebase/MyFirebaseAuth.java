@@ -14,35 +14,31 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 
 import net.iquesoft.project.seed.R;
-import net.iquesoft.project.seed.presentation.model.UserModel;
+import net.iquesoft.project.seed.utils.LogUtil;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+@Singleton
 public class MyFirebaseAuth {
-
-    private static MyFirebaseAuth ourInstance;
+    private Context context;
     private FirebaseAuth mAuth;
-    private UserModel userModel;
+    private GoogleApiClient googleApiClient;
 
-    private MyFirebaseAuth() {
-        userModel = UserModel.getInstance();
+    @Inject
+    public MyFirebaseAuth(Context context) {
+        this.context = context;
+        LogUtil.makeLog("MyFirebaseAuth constructor CONTEXT " + context);
+        initialize();
+    }
+
+    private void initialize() {
         this.mAuth = FirebaseAuth.getInstance();
-    }
-
-    public static MyFirebaseAuth getInstance() {
-        if (ourInstance == null) {
-            ourInstance = new MyFirebaseAuth();
-        }
-        return ourInstance;
-    }
-
-    public Task<AuthResult> getEmailAndPasswordAuthentication(String email, String password) {
-        return mAuth.signInWithEmailAndPassword(email, password);
-    }
-
-    public GoogleApiClient getGoogleApiClient(Context context) {
-        return new GoogleApiClient.Builder(context)
+        this.googleApiClient = new GoogleApiClient.Builder(context)
                 .enableAutoManage((FragmentActivity) context, new GoogleApiClient.OnConnectionFailedListener() {
                     @Override
                     public void onConnectionFailed(ConnectionResult connectionResult) {
+                        LogUtil.makeLog("connection failed " + connectionResult.getErrorMessage());
                     }
                 })
                 .addApi(Auth.GOOGLE_SIGN_IN_API, new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -52,13 +48,21 @@ public class MyFirebaseAuth {
                 .build();
     }
 
+    public Task<AuthResult> getEmailAndPasswordAuthentication(String email, String password) {
+        return this.mAuth.signInWithEmailAndPassword(email, password);
+    }
+
+    public GoogleApiClient getGoogleApiClient() {
+        return this.googleApiClient;
+    }
+
     public Task<AuthResult> signInWithCredentials(AuthCredential credential) {
-        return mAuth.signInWithCredential(credential);
+        return this.mAuth.signInWithCredential(credential);
 
     }
 
     public Task<AuthResult> createUserWithEmailAndPassword(String email, String password) {
-        return mAuth.createUserWithEmailAndPassword(email, password);
+        return this.mAuth.createUserWithEmailAndPassword(email, password);
 
     }
 

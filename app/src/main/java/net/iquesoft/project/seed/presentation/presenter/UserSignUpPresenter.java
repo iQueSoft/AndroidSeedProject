@@ -13,26 +13,21 @@ import net.iquesoft.project.seed.domain.exception.ErrorMessageFactory;
 import net.iquesoft.project.seed.domain.exception.InvalidEmailException;
 import net.iquesoft.project.seed.domain.exception.InvalidPasswordException;
 import net.iquesoft.project.seed.domain.firebase.MyFirebaseAuth;
+import net.iquesoft.project.seed.presentation.model.UserModel;
 import net.iquesoft.project.seed.presentation.view.fragment.SignUpFragment;
 
 public class UserSignUpPresenter implements Presenter, OnCompleteListener {
 
     private static UserSignUpPresenter ourInstance;
-    private final MyFirebaseAuth firebaseAuth;
-    RegularExpressionValidation validation;
+    private final MyFirebaseAuth myFirebaseAuth;
+    private RegularExpressionValidation validation;
     private Context context;
     private SignUpFragment fragmentView;
 
-    private UserSignUpPresenter(Context context) {
+    public UserSignUpPresenter(Context context, MyFirebaseAuth myFirebaseAuth, RegularExpressionValidation validation, UserModel userModel) {
+        this.myFirebaseAuth = myFirebaseAuth;
+        this.validation = validation;
         this.context = context;
-        firebaseAuth = MyFirebaseAuth.getInstance();
-    }
-
-    public static UserSignUpPresenter getInstance(Context context) {
-        if (ourInstance == null) {
-            ourInstance = new UserSignUpPresenter(context);
-        }
-        return ourInstance;
     }
 
     @Override
@@ -72,7 +67,7 @@ public class UserSignUpPresenter implements Presenter, OnCompleteListener {
             showPasswordError(new DefaultErrorBundle(e));
             return;
         }
-        firebaseAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(this);
+        myFirebaseAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(this);
     }
 
     private void showPasswordError(DefaultErrorBundle errorBundle) {

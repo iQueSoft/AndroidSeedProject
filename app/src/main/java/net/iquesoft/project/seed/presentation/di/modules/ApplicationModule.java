@@ -23,6 +23,8 @@ import net.iquesoft.project.seed.domain.executor.PostExecutionThread;
 import net.iquesoft.project.seed.domain.executor.ThreadExecutor;
 import net.iquesoft.project.seed.presentation.AndroidApplication;
 import net.iquesoft.project.seed.presentation.UIThread;
+import net.iquesoft.project.seed.presentation.model.UserModel;
+import net.iquesoft.project.seed.presentation.navigation.Navigator;
 
 import javax.inject.Singleton;
 
@@ -64,4 +66,15 @@ public class ApplicationModule {
         return uiThread;
     }
 
+    @Provides
+    @Singleton
+    Navigator provideNavigator() {
+        return new Navigator();
+    }
+
+    @Provides
+    @Singleton
+    UserModel provideUserModel() {
+        return new UserModel();
+    }
 }

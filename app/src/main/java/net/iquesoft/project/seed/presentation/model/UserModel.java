@@ -28,16 +28,7 @@ public class UserModel {
     private String userPassword;
     private FirebaseUser firebaseUser;
 
-
-    private UserModel() {
-
-    }
-
-    public static UserModel getInstance() {
-        if (ourInstance == null) {
-            ourInstance = new UserModel();
-        }
-        return ourInstance;
+    public UserModel() {
     }
 
     public String getUserName() {

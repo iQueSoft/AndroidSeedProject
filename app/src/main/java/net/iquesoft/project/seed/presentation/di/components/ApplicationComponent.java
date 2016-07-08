@@ -20,11 +20,9 @@ import android.content.Context;
 import net.iquesoft.project.seed.domain.executor.PostExecutionThread;
 import net.iquesoft.project.seed.domain.executor.ThreadExecutor;
 import net.iquesoft.project.seed.presentation.di.modules.ApplicationModule;
-import net.iquesoft.project.seed.presentation.di.modules.LoginModule;
+import net.iquesoft.project.seed.presentation.model.UserModel;
+import net.iquesoft.project.seed.presentation.navigation.Navigator;
 import net.iquesoft.project.seed.presentation.view.activity.BaseActivity;
-import net.iquesoft.project.seed.presentation.view.fragment.GalleryFragment;
-import net.iquesoft.project.seed.presentation.view.fragment.LoginFragment;
-import net.iquesoft.project.seed.presentation.view.fragment.SignUpFragment;
 
 import javax.inject.Singleton;
 
@@ -36,6 +34,7 @@ import dagger.Component;
 @Singleton // Constraints this component to one-per-application or unscoped bindings.
 @Component(modules = ApplicationModule.class)
 public interface ApplicationComponent {
+
     void inject(BaseActivity baseActivity);
 
     //Exposed to sub-graphs.
@@ -45,11 +44,7 @@ public interface ApplicationComponent {
 
     PostExecutionThread postExecutionThread();
 
-    LoginComponent plus(LoginModule loginModule);
+    Navigator navigator();
 
-    void inject(LoginFragment loginFragment);
-
-    void inject(GalleryFragment galleryFragment);
-
-    void inject(SignUpFragment signUpFragment);
+    UserModel userModel();
 }

@@ -16,11 +16,13 @@ import com.google.android.gms.common.SignInButton;
 import com.google.firebase.auth.FirebaseUser;
 
 import net.iquesoft.project.seed.R;
-import net.iquesoft.project.seed.presentation.AndroidApplication;
+import net.iquesoft.project.seed.presentation.di.components.LoginComponent;
 import net.iquesoft.project.seed.presentation.presenter.UserLoginPresenter;
 import net.iquesoft.project.seed.presentation.view.activity.MainActivity;
 import net.iquesoft.project.seed.presentation.view.interfaces.LoginView;
 import net.iquesoft.project.seed.utils.ToastMaker;
+
+import javax.inject.Inject;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -28,6 +30,8 @@ import butterknife.OnClick;
 
 public class LoginFragment extends BaseFragment implements LoginView, View.OnFocusChangeListener {
 
+    @Inject
+    UserLoginPresenter presenter;
 
     @BindView(R.id.rl_progress)
     RelativeLayout rl_progress;
@@ -45,18 +49,18 @@ public class LoginFragment extends BaseFragment implements LoginView, View.OnFoc
     TextInputEditText etLogin;
     @BindView(R.id.etPassword)
     TextInputEditText etPassword;
-    private UserLoginPresenter presenter;
+//    private UserLoginPresenter presenter;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        this.presenter = UserLoginPresenter.getInstance(getActivity());
+//        this.presenter = UserLoginPresenter.getInstance(getActivity());
         this.fragmentManager = getFragmentManager();
     }
 
     @Override
     void initializeInjection() {
-        AndroidApplication.get(getActivity()).getApplicationComponent().inject(this);
+        getComponent(LoginComponent.class).inject(this);
     }
 
     @Nullable

@@ -19,7 +19,6 @@ import com.facebook.FacebookSdk;
 import com.facebook.appevents.AppEventsLogger;
 import com.facebook.login.LoginManager;
 import com.google.android.gms.auth.api.Auth;
-import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.google.firebase.auth.FirebaseUser;
@@ -29,11 +28,16 @@ import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 
 import net.iquesoft.project.seed.R;
 import net.iquesoft.project.seed.presentation.di.HasComponent;
+import net.iquesoft.project.seed.presentation.di.components.DaggerLoginComponent;
 import net.iquesoft.project.seed.presentation.di.components.LoginComponent;
+import net.iquesoft.project.seed.presentation.di.modules.LoginModule;
+import net.iquesoft.project.seed.presentation.navigation.Navigator;
 import net.iquesoft.project.seed.presentation.presenter.UserLoginPresenter;
 import net.iquesoft.project.seed.presentation.view.fragment.LoginFragment;
 import net.iquesoft.project.seed.utils.Constants;
 import net.iquesoft.project.seed.utils.LogUtil;
+
+import javax.inject.Inject;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -42,9 +46,11 @@ import de.hdodenhof.circleimageview.CircleImageView;
 public class MainActivity extends BaseActivity
         implements NavigationView.OnNavigationItemSelectedListener, HasComponent<LoginComponent> {
 
-//    @Inject
-//    UserLoginPresenter presenter;
+    @Inject
+    UserLoginPresenter presenter;
 
+    @Inject
+    Navigator navigator;
 
     @BindView(R.id.fab)
     FloatingActionButton fab;
@@ -54,8 +60,7 @@ public class MainActivity extends BaseActivity
     DrawerLayout drawer;
     @BindView(R.id.nav_view)
     NavigationView navigationView;
-    private GoogleApiClient mGoogleApiClient;
-    private UserLoginPresenter presenter;
+    //    private UserLoginPresenter presenter;
     private com.nostra13.universalimageloader.core.ImageLoader imageLoader;
     private LoginComponent loginComponent;
 
@@ -64,18 +69,17 @@ public class MainActivity extends BaseActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-
-//        initializeInjection();
+        inject();
 
         FacebookSdk.sdkInitialize(getApplicationContext());
         AppEventsLogger.activateApp(this);
 
-        presenter = UserLoginPresenter.getInstance(this);
+//        presenter = UserLoginPresenter.getInstance(this);
         imageLoader = ImageLoader.getInstance();
         imageLoader.init(ImageLoaderConfiguration.createDefault(getBaseContext()));
 
         initFirebaseListener();
-        configureGoogleSignIn();
+//        configureGoogleSignIn();
         subscribeOnMessaging();
 
         // Handle possible data accompanying notification message.
@@ -115,27 +119,25 @@ public class MainActivity extends BaseActivity
         }
     }
 
-//    @Override
-//    protected void setupActivityComponent() {
-//        AndroidApplication.get(this)
-//                .getApplicationComponent()
-//                .plus(new LoginModule(this))
-//                .inject(this);
-//    }
+    private void inject() {
+        this.loginComponent = DaggerLoginComponent.builder()
+                .applicationComponent(getApplicationComponent())
+                .activityModule(getActivityModule())
+                .loginModule(new LoginModule(this))
+                .build();
+        this.getComponent().inject(this);
+    }
 
-//    private void initializeInjection() {
-//        this.loginComponent = DaggerLoginComponent.builder()
-//                .applicationComponent(getApplicationComponent())
-//                .activityModule(getActivityModule())
-//                .build();
-//    }
-
+    @Override
+    protected void setupActivityComponent() {
+    }
 
     @Override
     public void onStart() {
         super.onStart();
-        presenter.getFirebaseAuth().addAuthStateListener(presenter.getAuthListener());
-        mGoogleApiClient.connect();
+        presenter.getMyFirebaseAuth().addAuthStateListener(presenter.getAuthListener());
+        presenter.connectGoogleApiClient();
+
     }
 
     public void showUserInfoInUI(@NonNull FirebaseUser firebaseUser) {
@@ -232,9 +234,9 @@ public class MainActivity extends BaseActivity
     protected void onStop() {
         super.onStop();
         if (presenter.getAuthListener() != null) {
-            presenter.getFirebaseAuth().removeAuthStateListener(presenter.getAuthListener());
+            presenter.getMyFirebaseAuth().removeAuthStateListener(presenter.getAuthListener());
         }
-        mGoogleApiClient.disconnect();
+        presenter.disconnectGoogleApiClient();
     }
 
     @Override
@@ -252,9 +254,9 @@ public class MainActivity extends BaseActivity
         presenter.initFirebaseListener();
     }
 
-    private void configureGoogleSignIn() {
-        mGoogleApiClient = presenter.getGoogleApiClient(this);
-    }
+//    private void configureGoogleSignIn() {
+//        mGoogleApiClient = presenter.getGoogleApiClient(this);
+//    }
 
     private void subscribeOnMessaging() {
         FirebaseMessaging.getInstance().subscribeToTopic(Constants.FIREBASE_MESSAGE);
@@ -267,10 +269,10 @@ public class MainActivity extends BaseActivity
 
     private void signOut() {
         showDefaultUserInUI();
-        presenter.getFirebaseAuth().signOut();
+        presenter.getMyFirebaseAuth().signOut();
         LoginManager.getInstance().logOut();
-        while (mGoogleApiClient.isConnected()) {
-            Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(
+        while (presenter.getGoogleApiClient().isConnected()) {
+            Auth.GoogleSignInApi.signOut(presenter.getGoogleApiClient()).setResultCallback(
                     new ResultCallback<Status>() {
                         @Override
                         public void onResult(Status status) {
@@ -283,6 +285,6 @@ public class MainActivity extends BaseActivity
 
     @Override
     public LoginComponent getComponent() {
-        return loginComponent;
+        return this.loginComponent;
     }
 }

@@ -1,7 +1,5 @@
 package net.iquesoft.project.seed.presentation.presenter;
 
-import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentActivity;
@@ -17,8 +15,10 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -33,35 +33,29 @@ import net.iquesoft.project.seed.domain.exception.InvalidEmailException;
 import net.iquesoft.project.seed.domain.exception.InvalidPasswordException;
 import net.iquesoft.project.seed.domain.firebase.MyFirebaseAuth;
 import net.iquesoft.project.seed.presentation.model.UserModel;
+import net.iquesoft.project.seed.presentation.view.activity.MainActivity;
 import net.iquesoft.project.seed.presentation.view.fragment.LoginFragment;
 import net.iquesoft.project.seed.utils.Constants;
+import net.iquesoft.project.seed.utils.LogUtil;
 
 public class UserLoginPresenter implements Presenter, OnCompleteListener {
 
-    private static UserLoginPresenter ourInstance;
-    private final MyFirebaseAuth firebaseAuth;
+    private final MyFirebaseAuth myFirebaseAuth;
+    private final MainActivity mainActivity;
     private RegularExpressionValidation validation;
-    private Context context;
     private UserModel userModel;
     private LoginFragment fragmentView;
-    private GoogleApiClient mGoogleApiClient;
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
 
-
-    private UserLoginPresenter(Context context) {
-        this.context = context;
-        userModel = UserModel.getInstance();
-        firebaseAuth = MyFirebaseAuth.getInstance();
-        validation = new RegularExpressionValidation();
-        mGoogleApiClient = getGoogleApiClient(context);
-    }
-
-    public static UserLoginPresenter getInstance(Context context) {
-        if (ourInstance == null) {
-            ourInstance = new UserLoginPresenter(context);
-        }
-        return ourInstance;
+    public UserLoginPresenter(MainActivity mainActivity,
+                              MyFirebaseAuth myFirebaseAuth,
+                              RegularExpressionValidation regularExpressionValidation,
+                              UserModel userModel) {
+        this.mainActivity = mainActivity;
+        this.userModel = userModel;
+        this.myFirebaseAuth = myFirebaseAuth;
+        this.validation = regularExpressionValidation;
     }
 
     public void setView(LoginFragment view) {
@@ -81,8 +75,9 @@ public class UserLoginPresenter implements Presenter, OnCompleteListener {
     }
 
     public void initFirebaseListener() {
-        mAuth = FirebaseAuth.getInstance();
-        mAuthListener = new FirebaseAuth.AuthStateListener() {
+        LogUtil.makeLog("1 initFirebaseListener");
+        this.mAuth = FirebaseAuth.getInstance();
+        this.mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 FirebaseUser user = firebaseAuth.getCurrentUser();
@@ -93,64 +88,92 @@ public class UserLoginPresenter implements Presenter, OnCompleteListener {
     }
 
     public FirebaseAuth.AuthStateListener getAuthListener() {
-        return mAuthListener;
+        return this.mAuthListener;
 
     }
 
-    public GoogleApiClient getGoogleApiClient(Context context) {
-        if (userModel.getGoogleApiClient() == null) {
-            userModel.setGoogleApiClient(firebaseAuth.getGoogleApiClient(context));
-        }
-        return userModel.getGoogleApiClient();
-    }
+//    public GoogleApiClient getGoogleApiClient(Context mainActivity) {
+//        if (this.userModel.getGoogleApiClient() == null) {
+//            this.userModel.setGoogleApiClient(myFirebaseAuth.getGoogleApiClient(mainActivity));
+//        }
+//        return this.userModel.getGoogleApiClient();
+//    }
 
     public void signInWithCredentials(AuthCredential credential) {
-        firebaseAuth.signInWithCredentials(credential).addOnCompleteListener(this);
+        this.myFirebaseAuth.signInWithCredentials(credential).addOnCompleteListener(this);
     }
 
     public CallbackManager getFacebookCallbackManager() {
-        if (userModel.getFacebookCallback() == null)
-            userModel.setFacebookCallback(firebaseAuth.getFacebookCallbackManager());
-        return userModel.getFacebookCallback();
+        if (this.userModel.getFacebookCallback() == null)
+            this.userModel.setFacebookCallback(this.myFirebaseAuth.getFacebookCallbackManager());
+        return this.userModel.getFacebookCallback();
     }
 
 
     public void logInWithEmailAndPassword(String email, String password) {
+        LogUtil.makeLog("3 connectGoogleApiClient isConnected " + myFirebaseAuth.getGoogleApiClient().isConnected());
         this.fragmentView.showLoading();
         this.fragmentView.clearTextField();
         try {
-            validation.isEmailValid(email);
-            userModel.setUserEmail(email);
+            this.validation.isEmailValid(email);
+            this.userModel.setUserEmail(email);
         } catch (InvalidEmailException | EmptyFieldException e) {
             this.fragmentView.hideLoading();
             showEmailError(new DefaultErrorBundle(e));
             return;
         }
         try {
-            validation.isPasswordValid(password);
-            userModel.setUserPassword(password);
+            this.validation.isPasswordValid(password);
+            this.userModel.setUserPassword(password);
         } catch (EmptyFieldException | InvalidPasswordException e) {
             this.fragmentView.hideLoading();
             showPasswordError(new DefaultErrorBundle(e));
             return;
         }
 
-        firebaseAuth.getEmailAndPasswordAuthentication(email, password).addOnCompleteListener((Activity) context, this);
+        FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+            @Override
+            public void onComplete(@NonNull Task<AuthResult> task) {
+                LogUtil.makeLog("onComplete " + task.getResult());
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                LogUtil.makeLog("onFailure " + e.getMessage());
+            }
+        });
+//        while (!asd.isComplete()){
+//            LogUtil.makeLog("Result com[poelete " + asd.isComplete());
+//
+//        }
+//        LogUtil.makeLog("Result " + asd.toString());
+
+
+//
+//        LogUtil.makeLog("4 before auth");
+//        this.myFirebaseAuth.getEmailAndPasswordAuthentication(email, password).addOnCompleteListener(mainActivity, this)
+//                .addOnFailureListener(new OnFailureListener() {
+//            @Override
+//            public void onFailure(@NonNull Exception e) {
+//                LogUtil.makeLog("Failure " + e.getMessage());
+//            }
+//        });
     }
 
     public void logInWithGoogle(FragmentActivity activity) {
         this.fragmentView.showLoading();
-        Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
+        Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(this.myFirebaseAuth.getGoogleApiClient());
         activity.startActivityForResult(signInIntent, Constants.RC_SIGN_IN);
     }
+
     private void showPasswordError(DefaultErrorBundle errorBundle) {
-        String errorMessage = ErrorMessageFactory.create(context,
+        String errorMessage = ErrorMessageFactory.create(mainActivity,
                 errorBundle.getException());
         this.fragmentView.showPasswordError(errorMessage);
     }
 
     private void showEmailError(DefaultErrorBundle errorBundle) {
-        String errorMessage = ErrorMessageFactory.create(context,
+        String errorMessage = ErrorMessageFactory.create(mainActivity,
                 errorBundle.getException());
         this.fragmentView.showEmailError(errorMessage);
     }
@@ -158,20 +181,20 @@ public class UserLoginPresenter implements Presenter, OnCompleteListener {
 
     @Override
     public void onComplete(@NonNull Task task) {
-        fragmentView.hideLoading();
+        this.fragmentView.hideLoading();
         if (!task.isSuccessful()) {
             LoginManager.getInstance().logOut();
-            fragmentView.updateUI(null);
+            this.fragmentView.updateUI(null);
             try {
                 throw task.getException();
             } catch (Exception e) {
-                fragmentView.showError(e.getMessage());
+                this.fragmentView.showError(e.getMessage());
             }
         }
     }
 
 
-    public FirebaseAuth getFirebaseAuth() {
+    public FirebaseAuth getMyFirebaseAuth() {
         return mAuth;
     }
 
@@ -185,9 +208,9 @@ public class UserLoginPresenter implements Presenter, OnCompleteListener {
             }
         } else {
             // Signed out, show unauthenticated UI.
-            fragmentView.hideLoading();
-            fragmentView.updateUI(null);
-            fragmentView.showError(context.getString(R.string.error_message_authentication_error));
+            this.fragmentView.hideLoading();
+            this.fragmentView.updateUI(null);
+            this.fragmentView.showError(mainActivity.getString(R.string.error_message_authentication_error));
         }
     }
 
@@ -216,5 +239,19 @@ public class UserLoginPresenter implements Presenter, OnCompleteListener {
 
     public FirebaseUser getFirebaseUser() {
         return userModel.getFirebaseUser();
+    }
+
+    public void connectGoogleApiClient() {
+        LogUtil.makeLog("2 connectGoogleApiClient isConnected " + myFirebaseAuth.getGoogleApiClient().isConnected());
+        myFirebaseAuth.getGoogleApiClient().connect();
+        LogUtil.makeLog("3 connectGoogleApiClient isConnected " + myFirebaseAuth.getGoogleApiClient().isConnected());
+    }
+
+    public void disconnectGoogleApiClient() {
+        myFirebaseAuth.getGoogleApiClient().disconnect();
+    }
+
+    public GoogleApiClient getGoogleApiClient() {
+        return myFirebaseAuth.getGoogleApiClient();
     }
 }

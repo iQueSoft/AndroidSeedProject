@@ -18,15 +18,29 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 
 import net.iquesoft.project.seed.R;
-import net.iquesoft.project.seed.presentation.presenter.UserLoginPresenter;
+import net.iquesoft.project.seed.presentation.di.HasComponent;
+import net.iquesoft.project.seed.presentation.di.components.DaggerPrimaryActivityComponent;
+import net.iquesoft.project.seed.presentation.di.components.PrimaryActivityComponent;
+import net.iquesoft.project.seed.presentation.di.modules.PrimaryActivityModule;
+import net.iquesoft.project.seed.presentation.navigation.Navigator;
+import net.iquesoft.project.seed.presentation.presenter.PrimaryActivityPresenter;
 import net.iquesoft.project.seed.presentation.view.fragment.MainFragment;
+
+import javax.inject.Inject;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class PrimaryActivity extends BaseActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener, HasComponent<PrimaryActivityComponent> {
+
+
+    @Inject
+    Navigator navigator;
+
+    @Inject
+    PrimaryActivityPresenter presenter;
 
     @BindView(R.id.fab)
     FloatingActionButton fab;
@@ -37,19 +51,20 @@ public class PrimaryActivity extends BaseActivity
     @BindView(R.id.nav_view_primary)
     NavigationView navigationView;
 
-    private UserLoginPresenter loginPresenter;
     private com.nostra13.universalimageloader.core.ImageLoader imageLoader;
+    private PrimaryActivityComponent primaryActivityComponent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_primary);
+        inject();
         if (savedInstanceState == null) {
             addFragment(R.id.fragmentContainer_primary, new MainFragment());
         }
         ButterKnife.bind(this);
 
-        loginPresenter = UserLoginPresenter.getInstance(this);
+//        loginPresenter = UserLoginPresenter.getInstance(this);
         imageLoader = ImageLoader.getInstance();
         imageLoader.init(ImageLoaderConfiguration.createDefault(getBaseContext()));
 
@@ -72,9 +87,22 @@ public class PrimaryActivity extends BaseActivity
         navigationView.setNavigationItemSelectedListener(this);
     }
 
+    private void inject() {
+        this.getComponent().inject(this);
+    }
+
+    @Override
+    protected void setupActivityComponent() {
+        this.primaryActivityComponent = DaggerPrimaryActivityComponent.builder()
+                .applicationComponent(getApplicationComponent())
+                .activityModule(getActivityModule())
+                .primaryActivityModule(new PrimaryActivityModule(this))
+                .build();
+    }
+
     private void showUserInfoInUI() {
 
-        FirebaseUser firebaseUser = loginPresenter.getFirebaseUser();
+        FirebaseUser firebaseUser = presenter.getFirebaseUser();
         View view = navigationView.getHeaderView(0);
         Menu menu = navigationView.getMenu();
 
@@ -150,5 +178,10 @@ public class PrimaryActivity extends BaseActivity
 
     private void signOut() {
         navigator.navigateToMainActivity(this, "SignOut");
+    }
+
+    @Override
+    public PrimaryActivityComponent getComponent() {
+        return primaryActivityComponent;
     }
 }

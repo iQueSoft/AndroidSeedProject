@@ -10,21 +10,17 @@ import android.support.v7.app.AppCompatActivity;
 import net.iquesoft.project.seed.presentation.AndroidApplication;
 import net.iquesoft.project.seed.presentation.di.components.ApplicationComponent;
 import net.iquesoft.project.seed.presentation.di.modules.ActivityModule;
-import net.iquesoft.project.seed.presentation.navigation.Navigator;
-
-import javax.inject.Inject;
 
 /**
  * Base class for every Activity in this application.
  */
 public abstract class BaseActivity extends AppCompatActivity {
 
-    @Inject
-    Navigator navigator;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setupActivityComponent();
         initializeInjection();
     }
 
@@ -51,7 +47,7 @@ public abstract class BaseActivity extends AppCompatActivity {
                 .commit();
     }
 
-//    protected abstract void setupActivityComponent();
+    protected abstract void setupActivityComponent();
 
     protected ApplicationComponent getApplicationComponent() {
         return ((AndroidApplication) getApplication()).getApplicationComponent();
