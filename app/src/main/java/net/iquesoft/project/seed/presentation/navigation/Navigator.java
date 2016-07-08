@@ -16,21 +16,17 @@ import net.iquesoft.project.seed.presentation.view.fragment.MainFragment;
 import net.iquesoft.project.seed.presentation.view.fragment.ScrollingGalleryFragment;
 import net.iquesoft.project.seed.presentation.view.fragment.SignUpFragment;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 /**
  * Class used to navigate through the application.
  */
-
+@Singleton
 public class Navigator {
-    private static Navigator ourInstance;
 
-    private Navigator() {
-    }
-
-    public static Navigator getInstance() {
-        if (ourInstance == null) {
-            ourInstance = new Navigator();
-        }
-        return ourInstance;
+    @Inject
+    public Navigator() {
     }
 
     public void navigateToSignUpFragment(FragmentManager fragmentManager) {

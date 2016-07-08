@@ -28,7 +28,8 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 
 import net.iquesoft.project.seed.R;
-import net.iquesoft.project.seed.presentation.navigation.Navigator;
+import net.iquesoft.project.seed.presentation.di.HasComponent;
+import net.iquesoft.project.seed.presentation.di.components.LoginComponent;
 import net.iquesoft.project.seed.presentation.presenter.UserLoginPresenter;
 import net.iquesoft.project.seed.presentation.view.fragment.LoginFragment;
 import net.iquesoft.project.seed.utils.Constants;
@@ -39,7 +40,11 @@ import butterknife.ButterKnife;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class MainActivity extends BaseActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener, HasComponent<LoginComponent> {
+
+//    @Inject
+//    UserLoginPresenter presenter;
+
 
     @BindView(R.id.fab)
     FloatingActionButton fab;
@@ -49,10 +54,10 @@ public class MainActivity extends BaseActivity
     DrawerLayout drawer;
     @BindView(R.id.nav_view)
     NavigationView navigationView;
-    private Navigator navigator;
     private GoogleApiClient mGoogleApiClient;
     private UserLoginPresenter presenter;
     private com.nostra13.universalimageloader.core.ImageLoader imageLoader;
+    private LoginComponent loginComponent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,10 +65,11 @@ public class MainActivity extends BaseActivity
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
+//        initializeInjection();
+
         FacebookSdk.sdkInitialize(getApplicationContext());
         AppEventsLogger.activateApp(this);
 
-        navigator = Navigator.getInstance();
         presenter = UserLoginPresenter.getInstance(this);
         imageLoader = ImageLoader.getInstance();
         imageLoader.init(ImageLoaderConfiguration.createDefault(getBaseContext()));
@@ -108,6 +114,21 @@ public class MainActivity extends BaseActivity
             }
         }
     }
+
+//    @Override
+//    protected void setupActivityComponent() {
+//        AndroidApplication.get(this)
+//                .getApplicationComponent()
+//                .plus(new LoginModule(this))
+//                .inject(this);
+//    }
+
+//    private void initializeInjection() {
+//        this.loginComponent = DaggerLoginComponent.builder()
+//                .applicationComponent(getApplicationComponent())
+//                .activityModule(getActivityModule())
+//                .build();
+//    }
 
 
     @Override
@@ -258,5 +279,10 @@ public class MainActivity extends BaseActivity
                     });
         }
         navigator.navigateToLogInFragment(getSupportFragmentManager());
+    }
+
+    @Override
+    public LoginComponent getComponent() {
+        return loginComponent;
     }
 }

@@ -16,7 +16,7 @@ import com.google.android.gms.common.SignInButton;
 import com.google.firebase.auth.FirebaseUser;
 
 import net.iquesoft.project.seed.R;
-import net.iquesoft.project.seed.presentation.navigation.Navigator;
+import net.iquesoft.project.seed.presentation.AndroidApplication;
 import net.iquesoft.project.seed.presentation.presenter.UserLoginPresenter;
 import net.iquesoft.project.seed.presentation.view.activity.MainActivity;
 import net.iquesoft.project.seed.presentation.view.interfaces.LoginView;
@@ -51,8 +51,12 @@ public class LoginFragment extends BaseFragment implements LoginView, View.OnFoc
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.presenter = UserLoginPresenter.getInstance(getActivity());
-        this.navigator = Navigator.getInstance();
         this.fragmentManager = getFragmentManager();
+    }
+
+    @Override
+    void initializeInjection() {
+        AndroidApplication.get(getActivity()).getApplicationComponent().inject(this);
     }
 
     @Nullable

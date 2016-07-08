@@ -14,7 +14,7 @@ import android.widget.TextView;
 import com.google.firebase.auth.FirebaseUser;
 
 import net.iquesoft.project.seed.R;
-import net.iquesoft.project.seed.presentation.navigation.Navigator;
+import net.iquesoft.project.seed.presentation.AndroidApplication;
 import net.iquesoft.project.seed.presentation.presenter.UserSignUpPresenter;
 import net.iquesoft.project.seed.presentation.view.interfaces.LoginView;
 import net.iquesoft.project.seed.utils.ToastMaker;
@@ -46,8 +46,14 @@ public class SignUpFragment extends BaseFragment implements LoginView, View.OnFo
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         presenter = UserSignUpPresenter.getInstance(getActivity());
-        navigator = Navigator.getInstance();
         fragmentManager = getFragmentManager();
+
+
+    }
+
+    @Override
+    void initializeInjection() {
+        AndroidApplication.get(getActivity()).getApplicationComponent().inject(this);
 
     }
 

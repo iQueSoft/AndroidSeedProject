@@ -18,7 +18,6 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 
 import net.iquesoft.project.seed.R;
-import net.iquesoft.project.seed.presentation.navigation.Navigator;
 import net.iquesoft.project.seed.presentation.presenter.UserLoginPresenter;
 import net.iquesoft.project.seed.presentation.view.fragment.MainFragment;
 
@@ -38,7 +37,6 @@ public class PrimaryActivity extends BaseActivity
     @BindView(R.id.nav_view_primary)
     NavigationView navigationView;
 
-    private Navigator navigator;
     private UserLoginPresenter loginPresenter;
     private com.nostra13.universalimageloader.core.ImageLoader imageLoader;
 
@@ -51,7 +49,6 @@ public class PrimaryActivity extends BaseActivity
         }
         ButterKnife.bind(this);
 
-        navigator = Navigator.getInstance();
         loginPresenter = UserLoginPresenter.getInstance(this);
         imageLoader = ImageLoader.getInstance();
         imageLoader.init(ImageLoaderConfiguration.createDefault(getBaseContext()));

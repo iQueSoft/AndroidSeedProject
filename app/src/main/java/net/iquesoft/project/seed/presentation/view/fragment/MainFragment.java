@@ -22,6 +22,11 @@ public class MainFragment extends BaseFragment {
         super.onCreate(savedInstanceState);
     }
 
+    @Override
+    void initializeInjection() {
+
+    }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {

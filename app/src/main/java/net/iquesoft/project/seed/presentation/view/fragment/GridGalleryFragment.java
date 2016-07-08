@@ -32,6 +32,11 @@ public class GridGalleryFragment extends BaseFragment {
         presenter = GalleryPresenter.getInstance();
     }
 
+    @Override
+    void initializeInjection() {
+
+    }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {

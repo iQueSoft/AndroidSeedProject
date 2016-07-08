@@ -34,6 +34,11 @@ public class ScrollingGalleryFragment extends BaseFragment implements BaseSlider
         data = presenter.getListOfImagesId();
     }
 
+    @Override
+    void initializeInjection() {
+
+    }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {

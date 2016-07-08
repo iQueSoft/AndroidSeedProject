@@ -8,7 +8,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 
 import net.iquesoft.project.seed.R;
-import net.iquesoft.project.seed.presentation.navigation.Navigator;
+import net.iquesoft.project.seed.presentation.AndroidApplication;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -25,8 +25,15 @@ public class GalleryFragment extends BaseFragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        navigator = Navigator.getInstance();
         fragmentManager = getFragmentManager();
+
+
+    }
+
+    @Override
+    void initializeInjection() {
+        AndroidApplication.get(getActivity()).getApplicationComponent().inject(this);
+
     }
 
     @Nullable
