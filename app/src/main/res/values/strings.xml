@@ -38,4 +38,9 @@
     <string name="error_message_authentication_error">Authentication error</string>
     <string name="exception_message_empty_field">This field is required</string>
     <string name="title_activity_primary">PrimaryActivity</string>
+    <string name="splash_image">splash image</string>
+
+    <string name="title_activity_splash">SplashActivity</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
 </resources>

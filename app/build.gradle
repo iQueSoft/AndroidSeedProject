@@ -42,17 +42,9 @@ apply plugin: 'com.neenbedankt.android-apt'
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile 'com.android.support:appcompat-v7:24.0.0'
-    compile 'com.android.support:design:24.0.0'
     provided 'org.glassfish:javax.annotation:10.0-b28'
-    compile 'com.jakewharton:butterknife:8.0.1'
     apt 'com.jakewharton:butterknife-compiler:8.0.1'
-    compile 'io.reactivex:rxandroid:1.2.0'
-    compile 'io.reactivex:rxjava:1.1.5'
     compile files('libs/universal-image-loader-1.9.5.jar')
-    compile 'com.squareup.picasso:picasso:2.3.2'
-    compile 'com.nineoldandroids:library:2.4.0'
-    compile 'com.daimajia.slider:library:1.1.5@aar'
     // Required -- JUnit 4 framework
     testCompile 'junit:junit:4.12'
     // Optional -- Mockito framework
@@ -68,18 +60,30 @@ dependencies {
     androidTestCompile 'com.android.support.test.espresso:espresso-intents:2.2'
     androidTestCompile 'junit:junit:4.12'
     // Firebase Authentication
-    compile 'com.google.firebase:firebase-auth:9.0.2'
-    compile 'com.google.firebase:firebase-messaging:9.0.2'
     // Google Sign In SDK (only required for Google Sign In)
-    compile 'com.google.android.gms:play-services-auth:9.0.2'
     // Facebook Android SDK (only required for Facebook Login)
     facebookCompile 'com.facebook.android:facebook-android-sdk:4.13.1'
     // CircleImageView
-    compile 'de.hdodenhof:circleimageview:2.0.0'
     // Dagger 2
     apt 'com.google.dagger:dagger-compiler:2.0'
-    compile 'com.google.dagger:dagger:2.0'
     provided 'javax.annotation:jsr250-api:1.0'
+    compile 'com.android.support:appcompat-v7:24.0.0'
+    compile 'com.android.support:design:24.0.0'
+    compile 'com.jakewharton:butterknife:8.0.1'
+    compile 'io.reactivex:rxandroid:1.2.0'
+    compile 'io.reactivex:rxjava:1.1.5'
+    compile 'com.squareup.picasso:picasso:2.3.2'
+    compile 'com.nineoldandroids:library:2.4.0'
+    compile 'com.daimajia.slider:library:1.1.5@aar'
+    compile 'com.google.firebase:firebase-auth:9.0.2'
+    compile 'com.google.firebase:firebase-messaging:9.0.2'
+    compile 'com.google.android.gms:play-services-auth:9.0.2'
+    compile 'de.hdodenhof:circleimageview:2.0.0'
+    compile 'com.google.dagger:dagger:2.0'
+    compile 'com.android.support:support-v4:24.0.0'
+
+    //Dotted progressbar
+    compile 'com.github.igortrncic.dotted-progress-bar:library:1.0.0'
 }
 apply plugin: 'com.android.application'
 apply plugin: 'com.google.gms.google-services'

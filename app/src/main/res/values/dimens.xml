@@ -11,4 +11,5 @@
     <dimen name="textSmall">14sp</dimen>
     <dimen name="textMicro">12sp</dimen>
     <dimen name="buttons_margin">8dp</dimen>
+    <dimen name="splash_image_margin">16dp</dimen>
 </resources>
