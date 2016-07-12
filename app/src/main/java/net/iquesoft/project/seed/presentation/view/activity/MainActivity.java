@@ -60,7 +60,6 @@ public class MainActivity extends BaseActivity
     DrawerLayout drawer;
     @BindView(R.id.nav_view)
     NavigationView navigationView;
-    //    private UserLoginPresenter presenter;
     private com.nostra13.universalimageloader.core.ImageLoader imageLoader;
     private LoginComponent loginComponent;
 
@@ -69,17 +68,14 @@ public class MainActivity extends BaseActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-        inject();
 
         FacebookSdk.sdkInitialize(getApplicationContext());
         AppEventsLogger.activateApp(this);
 
-//        presenter = UserLoginPresenter.getInstance(this);
         imageLoader = ImageLoader.getInstance();
         imageLoader.init(ImageLoaderConfiguration.createDefault(getBaseContext()));
 
         initFirebaseListener();
-//        configureGoogleSignIn();
         subscribeOnMessaging();
 
         // Handle possible data accompanying notification message.
@@ -119,17 +115,14 @@ public class MainActivity extends BaseActivity
         }
     }
 
-    private void inject() {
+    @Override
+    protected void setupActivityComponent() {
         this.loginComponent = DaggerLoginComponent.builder()
                 .applicationComponent(getApplicationComponent())
                 .activityModule(getActivityModule())
                 .loginModule(new LoginModule(this))
                 .build();
         this.getComponent().inject(this);
-    }
-
-    @Override
-    protected void setupActivityComponent() {
     }
 
     @Override
@@ -253,10 +246,6 @@ public class MainActivity extends BaseActivity
     private void initFirebaseListener() {
         presenter.initFirebaseListener();
     }
-
-//    private void configureGoogleSignIn() {
-//        mGoogleApiClient = presenter.getGoogleApiClient(this);
-//    }
 
     private void subscribeOnMessaging() {
         FirebaseMessaging.getInstance().subscribeToTopic(Constants.FIREBASE_MESSAGE);

@@ -23,7 +23,6 @@ public class LoginModule {
         this.mainActivity = mainActivity;
     }
 
-
     @Provides
     @PerActivity
     MainActivity provideMainActivity() {

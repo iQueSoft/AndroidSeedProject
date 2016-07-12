@@ -48,7 +48,9 @@
             android:name=".presentation.view.activity.PrimaryActivity"
             android:label="@string/title_activity_primary"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".presentation.view.activity.SplashActivity">
+        <activity
+            android:name=".presentation.view.activity.SplashActivity"
+            android:noHistory="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

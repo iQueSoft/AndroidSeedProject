@@ -1,6 +1,7 @@
 package net.iquesoft.project.seed.presentation.di.components;
 
 
+import net.iquesoft.project.seed.domain.firebase.MyFirebaseAuth;
 import net.iquesoft.project.seed.presentation.di.PerActivity;
 import net.iquesoft.project.seed.presentation.di.modules.ActivityModule;
 import net.iquesoft.project.seed.presentation.di.modules.LoginModule;
@@ -23,4 +24,5 @@ public interface LoginComponent extends ActivityComponent {
 
     void inject(MainActivity mainActivity);
 
+    MyFirebaseAuth myFirebaseAuth();
 }

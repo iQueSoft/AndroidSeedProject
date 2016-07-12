@@ -49,12 +49,10 @@ public class LoginFragment extends BaseFragment implements LoginView, View.OnFoc
     TextInputEditText etLogin;
     @BindView(R.id.etPassword)
     TextInputEditText etPassword;
-//    private UserLoginPresenter presenter;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        this.presenter = UserLoginPresenter.getInstance(getActivity());
         this.fragmentManager = getFragmentManager();
     }
 

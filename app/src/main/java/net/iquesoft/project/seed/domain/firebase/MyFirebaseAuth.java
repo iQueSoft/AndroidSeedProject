@@ -14,12 +14,9 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 
 import net.iquesoft.project.seed.R;
-import net.iquesoft.project.seed.utils.LogUtil;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
-@Singleton
 public class MyFirebaseAuth {
     private Context context;
     private FirebaseAuth mAuth;
@@ -28,7 +25,6 @@ public class MyFirebaseAuth {
     @Inject
     public MyFirebaseAuth(Context context) {
         this.context = context;
-        LogUtil.makeLog("MyFirebaseAuth constructor CONTEXT " + context);
         initialize();
     }
 
@@ -38,7 +34,6 @@ public class MyFirebaseAuth {
                 .enableAutoManage((FragmentActivity) context, new GoogleApiClient.OnConnectionFailedListener() {
                     @Override
                     public void onConnectionFailed(ConnectionResult connectionResult) {
-                        LogUtil.makeLog("connection failed " + connectionResult.getErrorMessage());
                     }
                 })
                 .addApi(Auth.GOOGLE_SIGN_IN_API, new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -70,4 +65,7 @@ public class MyFirebaseAuth {
         return CallbackManager.Factory.create();
     }
 
+    public FirebaseAuth getAuth() {
+        return mAuth;
+    }
 }

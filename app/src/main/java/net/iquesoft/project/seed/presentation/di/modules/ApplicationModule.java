@@ -77,4 +77,5 @@ public class ApplicationModule {
     UserModel provideUserModel() {
         return new UserModel();
     }
+
 }

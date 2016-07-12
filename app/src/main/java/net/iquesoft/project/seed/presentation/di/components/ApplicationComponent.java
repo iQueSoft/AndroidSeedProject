@@ -47,4 +47,5 @@ public interface ApplicationComponent {
     Navigator navigator();
 
     UserModel userModel();
+
 }
